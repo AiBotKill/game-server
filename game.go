@@ -6,8 +6,17 @@ import (
 )
 
 type game struct {
+	Id         string
+	State      string
 	LastUpdate time.Time
 	Entities   []*entity
+}
+
+func NewGame() *game {
+	g := &game{}
+	g.Id = Uuid()
+	g.State = "new"
+	return g
 }
 
 func (g *game) update(dt time.Duration) {
