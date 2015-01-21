@@ -23,6 +23,9 @@ func main() {
 	}
 
 	natsEncodedConn.QueueSubscribe("createGame", "createGame", natsCreateGame)
+	natsEncodedConn.Subscribe("new_gameserver", func(subj string, reply string, msg map[string]interface{}) {
+		log.Println(msg)
+	})
 
 	goRoutines := 0
 	for {
@@ -40,12 +43,9 @@ func main() {
 	}
 }
 
-func natsCreateGame(subj string, reply string, msg interface{}) {
+func natsCreateGame(subj string, reply string, msg GameMessage) {
 	g := NewGame()
-
-	log.Println(msg)
-
-	natsEncodedConn.Subscribe(g.Id+".create_player", func(subj string, reply string, msg interface{}) {
+	natsEncodedConn.Subscribe(g.Id+".create_player", func(subj string, reply string, msg *GameMessage) {
 		if g.State != "new" {
 			natsEncodedConn.Publish(reply, map[string]interface{}{
 				"error": "can't create player when gamestate is '" + g.State + "'.",
@@ -53,14 +53,18 @@ func natsCreateGame(subj string, reply string, msg interface{}) {
 		}
 
 		p := NewEntity([2]float64{0, 0}, 1, g)
-		natsEncodedConn.Subscribe(p.Id+".action", func(subj string, reply string, msg interface{}) {
+		natsEncodedConn.Subscribe(p.Id+".action", func(subj string, reply string, msg *GameMessage) {
 			log.Println("player", p.Id, "actionMsg", msg)
 		})
 
 		natsEncodedConn.Publish(reply, p.Id)
 	})
 
-	natsEncodedConn.Subscribe(g.Id+".join", func(subj string, reply string, msg interface{}) {})
+	natsEncodedConn.Subscribe(g.Id+".join", func(subj string, reply string, msg *GameMessage) {
+	})
+
+	natsEncodedConn.Subscribe(g.Id+".start", func(subj string, reply string, msg *GameMessage) {
+	})
 
 	natsEncodedConn.Publish(reply, g.Id)
 

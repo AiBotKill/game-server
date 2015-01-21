@@ -27,6 +27,12 @@ func (g *game) update(dt time.Duration) {
 	}
 }
 
+// TODO: start gameloop
+func (g *game) start() {
+	// wait for frametime OR until every player has action set
+	// update everything
+}
+
 func intersectionPoint(x1, y1, x2, y2, x3, y3, x4, y4 float64) []float64 {
 	d := (x1-x2)*(y3-y4) - (y1-y2)*(x3-x4)
 	if d != 0 {

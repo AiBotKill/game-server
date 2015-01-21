@@ -12,17 +12,26 @@ import (
 func NewEntity(location [2]float64, entityType int, g *game) *entity {
 	e := &entity{}
 	e.Id = Uuid()
+	e.Location = location
+	e.Velocity = [2]float64{0, 0}
+	e.Acceleration = [2]float64{0, 0}
+	e.Dimensions = [2]float64{1, 1}
+	e.EntityType = entityType
+	e.Game = g
+	e.HitPoints = 100.0
 	return e
 }
 
 type entity struct {
 	Id           string
 	Game         *game
+	HitPoints    float64
 	Location     [2]float64
 	Velocity     [2]float64
 	Acceleration [2]float64
 	Dimensions   [2]float64 // [width, height float64]
 	EntityType   int
+	Exhausted    bool
 }
 
 func (e *entity) update(dt time.Duration) {
@@ -30,6 +39,7 @@ func (e *entity) update(dt time.Duration) {
 		e.Velocity[i] += e.Acceleration[i] * dt.Seconds()
 		e.Location[i] += e.Velocity[i] * dt.Seconds()
 	}
+	e.Exhausted = false
 }
 
 // Action is a string, separated with spaces in format of:
@@ -66,5 +76,6 @@ func (e *entity) action(action string) error {
 	case "look":
 		break
 	}
+	e.Exhausted = true
 	return nil
 }
