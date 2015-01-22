@@ -12,20 +12,7 @@ func main() {
 	if err := startNats(); err != nil {
 		log.Panicln("Can connect or start to gnatsd:", err.Error())
 	}
-	id := Uuid()
-
-	err := natsEncodedConn.Publish("new_gameserver", map[string]interface{}{
-		"gameserver_id": id,
-	})
-
-	if err != nil {
-		log.Panicln("Can't publish new_gameserver message.")
-	}
-
-	natsEncodedConn.QueueSubscribe("createGame", "createGame", natsCreateGame)
-	natsEncodedConn.Subscribe("new_gameserver", func(subj string, reply string, msg map[string]interface{}) {
-		log.Println(msg)
-	})
+	serviceId = Uuid()
 
 	goRoutines := 0
 	for {
@@ -41,6 +28,21 @@ func main() {
 			log.Println("Goroutines [", goRoutines, "]")
 		}
 	}
+}
+
+func natsInit() {
+	err := natsEncodedConn.Publish("new_gameserver", map[string]interface{}{
+		"gameserver_id": serviceId,
+	})
+
+	if err != nil {
+		log.Panicln("Can't publish new_gameserver message.")
+	}
+
+	natsEncodedConn.QueueSubscribe("create_game", "create_game", natsCreateGame)
+	natsEncodedConn.Subscribe("new_gameserver", func(subj string, reply string, msg map[string]interface{}) {
+		log.Println(msg)
+	})
 }
 
 func natsCreateGame(subj string, reply string, msg GameMessage) {
