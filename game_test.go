@@ -6,6 +6,17 @@ import (
 	"time"
 )
 
+func TestPlayerShooting(t *testing.T) {
+	Convey("Given a new game with two players", t, func() {
+		g := &game{}
+		g.State = "running"
+		p1 := g.newPlayer([2]float64{0, 0}, "player 1")
+		p2 := g.newPlayer([2]float64{10, 0}, "player 2")
+		p1.shoot(p2.Location)
+		g.update(time.Second * 10)
+	})
+}
+
 func TestEntityMovement(t *testing.T) {
 	Convey("Given a new entity with acceleration of [1, 0.5]", t, func() {
 		e := &entity{}
@@ -75,6 +86,7 @@ func TestEntityMovement(t *testing.T) {
 func TestGameIntersection(t *testing.T) {
 	Convey("Given a new game with one entity moving trough a line on X axis", t, func() {
 		game := &game{}
+		game.State = "running"
 		e := &entity{}
 		e.Dimensions = [2]float64{1, 1}
 		e.Location = [2]float64{1, 1}
@@ -92,6 +104,7 @@ func TestGameIntersection(t *testing.T) {
 
 	Convey("Given a new game with one entity moving trough a line on X axis", t, func() {
 		game := &game{}
+		game.State = "running"
 		e := &entity{}
 		e.Dimensions = [2]float64{1.0, 1.0}
 		e.Location = [2]float64{0.0, 0.0}
@@ -125,6 +138,7 @@ func TestGameIntersection(t *testing.T) {
 
 	Convey("Given a new game with one entity moving trough a line on Y axis", t, func() {
 		game := &game{}
+		game.State = "running"
 		e := &entity{}
 		e.Dimensions = [2]float64{1.0, 1.0}
 		e.Location = [2]float64{0.0, 0.0}

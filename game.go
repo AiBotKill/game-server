@@ -10,8 +10,11 @@ type game struct {
 	State      string
 	LastUpdate time.Time
 	Entities   []*entity
+	Bullets    []*bullet
+	Players    []*player
 }
 
+// NewGame returns a new game with random uuid and with "new" status.
 func NewGame() *game {
 	g := &game{}
 	g.Id = Uuid()
@@ -19,11 +22,30 @@ func NewGame() *game {
 	return g
 }
 
+func (g *game) gameOver() bool {
+	playerAlive := 0
+	for _, p := range g.Players {
+		if p.HitPoints > 0 {
+			playerAlive++
+		}
+	}
+	return playerAlive < 2
+}
+
+// update runs update functions of all entities and bullets.
 func (g *game) update(dt time.Duration) {
-	//dt := time.Since(g.LastUpdate)
 	g.LastUpdate = time.Now()
-	for _, e := range g.Entities {
-		e.update(dt)
+
+	if g.State == "running" {
+		for _, b := range g.Bullets {
+			b.update(dt)
+		}
+		for _, e := range g.Entities {
+			e.update(dt)
+		}
+		if g.gameOver() {
+			g.State = "ended"
+		}
 	}
 }
 
@@ -33,6 +55,7 @@ func (g *game) start() {
 	// update everything
 }
 
+// intersectionPoint returns cordinates of intersection between two lines, or nil if they do not collide.
 func intersectionPoint(x1, y1, x2, y2, x3, y3, x4, y4 float64) []float64 {
 	d := (x1-x2)*(y3-y4) - (y1-y2)*(x3-x4)
 	if d != 0 {
@@ -58,16 +81,17 @@ func (g *game) collision(vector [4]float64) []*collision {
 	// Loop trough all entities, optimize opportunity with culling.
 	var collisions []*collision
 	for _, e := range g.Entities {
+		// Crate collision borders over entity being checed.
 		xmin := e.Location[0] - (e.Dimensions[0] / 2.0)
 		ymin := e.Location[1] - (e.Dimensions[1] / 2.0)
 		xmax := e.Location[0] + (e.Dimensions[0] / 2.0)
 		ymax := e.Location[1] + (e.Dimensions[1] / 2.0)
-
 		borders := [][4]float64{[4]float64{xmin, ymin, xmax, ymin},
 			[4]float64{xmin, ymin, xmin, ymax},
 			[4]float64{xmax, ymin, xmax, ymax},
 			[4]float64{xmin, ymax, xmax, ymax}}
 
+		// Test intersections against all borders
 		for _, b := range borders {
 			if i := intersectionPoint(vector[0], vector[1], vector[2], vector[3], b[0], b[1], b[2], b[3]); i != nil {
 				log.Println(b)
@@ -76,4 +100,19 @@ func (g *game) collision(vector [4]float64) []*collision {
 		}
 	}
 	return collisions
+}
+
+// newBullet adds a new bullet to the bullet updatelist with given location, velocity and damage
+func (g *game) newBullet(location [2]float64, velocity [2]float64, damage float64, shooter *player) {
+	log.Println(shooter.entity.Game)
+	b := NewBullet(location, velocity, damage, g, shooter)
+	g.Bullets = append(g.Bullets, b)
+}
+
+func (g *game) newPlayer(location [2]float64, name string) *player {
+	p := newPlayer()
+	p.Game = g
+	p.Location = location
+	g.Players = append(g.Players, p)
+	return p
 }

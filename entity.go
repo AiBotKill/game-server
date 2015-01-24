@@ -29,6 +29,7 @@ type entity struct {
 	Location     [2]float64
 	Velocity     [2]float64
 	Acceleration [2]float64
+	Looking      [2]float64
 	Dimensions   [2]float64 // [width, height float64]
 	EntityType   int
 	Exhausted    bool
