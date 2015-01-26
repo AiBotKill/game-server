@@ -45,9 +45,9 @@ type LeaveMessage struct {
 
 type ActionMessage struct {
 	PlayerId  string `json:"playerId"`
-	Type      int    `json:"type"`
+	Type      string `json:"type"`
 	Direction struct {
-		X int `json:"x"`
-		Y int `json:"y"`
+		X float64 `json:"x"`
+		Y float64 `json:"y"`
 	} `json:"direction"`
 }

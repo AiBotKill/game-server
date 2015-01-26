@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"runtime"
 	"time"
@@ -54,22 +55,42 @@ func natsCreateGame(subj string, reply string, msg GameMessage) {
 			})
 		}
 
+		// Crate new player
 		p := NewEntity([2]float64{0, 0}, 1, g)
+
+		// Add action message handler to the new player
 		natsEncodedConn.Subscribe(p.Id+".action", func(subj string, reply string, msg *GameMessage) {
 			log.Println("player", p.Id, "actionMsg", msg)
+			if msg.Action != nil {
+				err := p.action(fmt.Sprintf("%s %f %f", msg.Action.Type, msg.Action.Direction.X, msg.Action.Direction.Y))
+				if err != nil {
+					natsEncodedConn.Publish(reply, err)
+					return
+				}
+				natsEncodedConn.Publish(reply, fmt.Sprintf("%s %f %f", msg.Action.Type, msg.Action.Direction.X, msg.Action.Direction.Y))
+				return
+			}
+			natsEncodedConn.Publish(reply, "action was nil")
 		})
 
+		// Reply with player id
 		natsEncodedConn.Publish(reply, p.Id)
 	})
 
+	// Subscribe game to "join" message
 	natsEncodedConn.Subscribe(g.Id+".join", func(subj string, reply string, msg *GameMessage) {
+		// TODO
 	})
 
+	// Subscribe game to "start" message
 	natsEncodedConn.Subscribe(g.Id+".start", func(subj string, reply string, msg *GameMessage) {
+		// TODO
 	})
 
+	// Reply with game id
 	natsEncodedConn.Publish(reply, g.Id)
 
+	// Publish "new game message"
 	err := natsEncodedConn.Publish("new_game", map[string]interface{}{
 		"gameId": g.Id,
 	})

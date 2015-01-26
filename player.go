@@ -2,9 +2,10 @@ package main
 
 type player struct {
 	entity
-	Name   string
-	Speed  float64
-	Damage float64
+	Name        string
+	Speed       float64
+	Damage      float64
+	BulletSpeed float64
 }
 
 func newPlayer() *player {
@@ -16,13 +17,19 @@ func newPlayer() *player {
 	return p
 }
 
-func (p *player) shoot(at [2]float64) {
-	var velocity [2]float64
-	velocity[0] = 10.0
-	velocity[1] = 0.0
-	p.Game.newBullet(p.Location, velocity, 10.0, p)
+func (p *player) shoot(at Vector) {
+	at.SetLength(p.BulletSpeed)
+	p.Game.newBullet(p.Location, at, p.Damage, p)
 }
 
-func (p *player) move(at [2]float64) {}
+func (p *player) move(at Vector) {
+	if at.Length() > p.Speed {
+		at.SetLength(p.Speed)
+	}
+	p.Velocity = at
+}
 
-func (p *player) look(at [2]float64) {}
+func (p *player) look(at Vector) {
+	at.Normalize()
+	p.Looking = at
+}

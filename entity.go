@@ -13,8 +13,7 @@ func NewEntity(location [2]float64, entityType int, g *game) *entity {
 	e := &entity{}
 	e.Id = Uuid()
 	e.Location = location
-	e.Velocity = [2]float64{0, 0}
-	e.Acceleration = [2]float64{0, 0}
+	e.Velocity = Vector{0, 0}
 	e.Dimensions = [2]float64{1, 1}
 	e.EntityType = entityType
 	e.Game = g
@@ -23,21 +22,19 @@ func NewEntity(location [2]float64, entityType int, g *game) *entity {
 }
 
 type entity struct {
-	Id           string
-	Game         *game
-	HitPoints    float64
-	Location     [2]float64
-	Velocity     [2]float64
-	Acceleration [2]float64
-	Looking      [2]float64
-	Dimensions   [2]float64 // [width, height float64]
-	EntityType   int
-	Exhausted    bool
+	Id         string
+	Game       *game
+	HitPoints  float64
+	Location   [2]float64
+	Velocity   Vector
+	Looking    Vector
+	Dimensions [2]float64 // [width, height float64]
+	EntityType int
+	Exhausted  bool
 }
 
 func (e *entity) update(dt time.Duration) {
 	for i := 0; i < len(e.Location); i++ {
-		e.Velocity[i] += e.Acceleration[i] * dt.Seconds()
 		e.Location[i] += e.Velocity[i] * dt.Seconds()
 	}
 	e.Exhausted = false

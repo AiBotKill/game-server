@@ -103,7 +103,7 @@ func (g *game) collision(vector [4]float64) []*collision {
 }
 
 // newBullet adds a new bullet to the bullet updatelist with given location, velocity and damage
-func (g *game) newBullet(location [2]float64, velocity [2]float64, damage float64, shooter *player) {
+func (g *game) newBullet(location [2]float64, velocity Vector, damage float64, shooter *player) {
 	log.Println(shooter.entity.Game)
 	b := NewBullet(location, velocity, damage, g, shooter)
 	g.Bullets = append(g.Bullets, b)

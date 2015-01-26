@@ -51,6 +51,17 @@ func TestNatsConnectivity(t *testing.T) {
 					err := natsEncodedConn.Request(gameId+".create_player", &GameMessage{}, &playerId, 1*time.Second)
 					So(err, ShouldBeNil)
 					t.Log("player id:", playerId)
+
+					gm := &GameMessage{}
+					gm.Action = &ActionMessage{}
+					gm.Action.Type = "move"
+					gm.Action.Direction.X = 1.0
+					gm.Action.Direction.Y = 0.0
+					var response string
+					err = natsEncodedConn.Request(playerId+".action", gm, &response, 1*time.Second)
+					So(err, ShouldBeNil)
+
+					t.Logf("reply for player action: %s", response)
 				})
 			})
 		})

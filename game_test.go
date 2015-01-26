@@ -18,12 +18,11 @@ func TestPlayerShooting(t *testing.T) {
 }
 
 func TestEntityMovement(t *testing.T) {
-	Convey("Given a new entity with acceleration of [1, 0.5]", t, func() {
+	Convey("Given a new entity with Velocity of [1, 0.5]", t, func() {
 		e := &entity{}
 		e.Dimensions = [2]float64{1, 1}
 		e.Location = [2]float64{0, 0}
-		e.Acceleration = [2]float64{1, 0.5}
-		e.Velocity = [2]float64{0, 0}
+		e.Velocity = [2]float64{1, 0.5}
 		Convey("after one second", func() {
 			e.update(time.Second * 1.0)
 
@@ -41,20 +40,12 @@ func TestEntityMovement(t *testing.T) {
 		Convey("after two seconds", func() {
 			e.update(time.Second * 2.0)
 
-			Convey("x velocity should be 2", func() {
-				So(e.Velocity[0], ShouldEqual, 2.0)
+			Convey("X location should be 2", func() {
+				So(e.Location[0], ShouldEqual, 2.0)
 			})
 
-			Convey("y velocity should be 1.0", func() {
-				So(e.Velocity[1], ShouldEqual, 1.0)
-			})
-
-			Convey("X location should be 4", func() {
-				So(e.Location[0], ShouldEqual, 4.0)
-			})
-
-			Convey("Y location should be 2", func() {
-				So(e.Location[1], ShouldEqual, 2.0)
+			Convey("Y location should be 1", func() {
+				So(e.Location[1], ShouldEqual, 1.0)
 			})
 		})
 
