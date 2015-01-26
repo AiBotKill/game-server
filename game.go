@@ -9,7 +9,6 @@ type game struct {
 	Id         string
 	State      string
 	LastUpdate time.Time
-	Entities   []*entity
 	Bullets    []*bullet
 	Players    []*player
 }
@@ -40,8 +39,8 @@ func (g *game) update(dt time.Duration) {
 		for _, b := range g.Bullets {
 			b.update(dt)
 		}
-		for _, e := range g.Entities {
-			e.update(dt)
+		for _, p := range g.Players {
+			p.update(dt)
 		}
 		if g.gameOver() {
 			g.State = "ended"
@@ -73,14 +72,14 @@ func intersectionPoint(x1, y1, x2, y2, x3, y3, x4, y4 float64) []float64 {
 }
 
 type collision struct {
-	Entity *entity
+	Entity *player
 	Point  [2]float64
 }
 
 func (g *game) collision(vector [4]float64) []*collision {
 	// Loop trough all entities, optimize opportunity with culling.
 	var collisions []*collision
-	for _, e := range g.Entities {
+	for _, e := range g.Players {
 		// Crate collision borders over entity being checed.
 		xmin := e.Location[0] - (e.Dimensions[0] / 2.0)
 		ymin := e.Location[1] - (e.Dimensions[1] / 2.0)
@@ -110,9 +109,7 @@ func (g *game) newBullet(location [2]float64, velocity Vector, damage float64, s
 }
 
 func (g *game) newPlayer(location [2]float64, name string) *player {
-	p := newPlayer()
-	p.Game = g
-	p.Location = location
+	p := newPlayer(location, g)
 	g.Players = append(g.Players, p)
 	return p
 }

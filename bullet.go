@@ -11,7 +11,7 @@ type bullet struct {
 	Shooter *player
 }
 
-func NewBullet(location [2]float64, velocity [2]float64, damage float64, game *game, shooter *player) *bullet {
+func NewBullet(location [2]float64, velocity Vector, damage float64, game *game, shooter *player) *bullet {
 	b := &bullet{entity: *NewEntity(location, 2, game)}
 	b.Velocity = velocity
 	b.Damage = damage
@@ -36,5 +36,5 @@ func (b *bullet) update(dt time.Duration) {
 	for _, e := range collisions {
 		log.Println("bullet collisions", e)
 	}
-	log.Println("bullet updated:", collisionVector)
+	log.Println("bullet updated:", collisionVector, b.GetVelocity(), b.GetLocation())
 }

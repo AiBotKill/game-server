@@ -11,15 +11,15 @@ func TestPlayerShooting(t *testing.T) {
 		g := &game{}
 		g.State = "running"
 		p1 := g.newPlayer([2]float64{0, 0}, "player 1")
-		p2 := g.newPlayer([2]float64{10, 0}, "player 2")
-		p1.shoot(p2.Location)
+		_ = g.newPlayer([2]float64{10, 0}, "player 2")
+		p1.shoot(Vector{10, 0})
 		g.update(time.Second * 10)
 	})
 }
 
 func TestEntityMovement(t *testing.T) {
-	Convey("Given a new entity with Velocity of [1, 0.5]", t, func() {
-		e := &entity{}
+	Convey("Given a new player with Velocity of [1, 0.5]", t, func() {
+		e := &player{}
 		e.Dimensions = [2]float64{1, 1}
 		e.Location = [2]float64{0, 0}
 		e.Velocity = [2]float64{1, 0.5}
@@ -49,41 +49,19 @@ func TestEntityMovement(t *testing.T) {
 			})
 		})
 
-		Convey("Action", func() {
-			e.action("tooshort")
-			e.action("look 1.0 1.0")
-			e.action("shoot 1.0 1.0")
-			e.action("shoot 1.0 xxxx")
-			e.action("shoot xxxx 1.0")
-
-			e.action("move -1 0")
-			e.action("move 0 -1")
-
-			e.action("move -1 -1")
-			e.action("move 0 0")
-			e.action("move 1 1")
-
-			e.action("move 0 1")
-			e.action("move 1 0")
-
-			e.action("move -1 1")
-			e.action("move 1 -1")
-
-		})
-
 	})
 }
 
 func TestGameIntersection(t *testing.T) {
-	Convey("Given a new game with one entity moving trough a line on X axis", t, func() {
+	Convey("Given a new game with one player moving trough a line on X axis", t, func() {
 		game := &game{}
 		game.State = "running"
-		e := &entity{}
+		e := &player{}
 		e.Dimensions = [2]float64{1, 1}
 		e.Location = [2]float64{1, 1}
 		e.Game = game
 
-		game.Entities = append(game.Entities, e)
+		game.Players = append(game.Players, e)
 		line := [4]float64{0, 0, 2, 2}
 
 		Convey("intersection should happen", func() {
@@ -93,14 +71,14 @@ func TestGameIntersection(t *testing.T) {
 
 	})
 
-	Convey("Given a new game with one entity moving trough a line on X axis", t, func() {
+	Convey("Given a new game with one player moving trough a line on X axis", t, func() {
 		game := &game{}
 		game.State = "running"
-		e := &entity{}
+		e := &player{}
 		e.Dimensions = [2]float64{1.0, 1.0}
 		e.Location = [2]float64{0.0, 0.0}
 		e.Velocity = [2]float64{1.0, 0.0}
-		game.Entities = append(game.Entities, e)
+		game.Players = append(game.Players, e)
 		line := [4]float64{1.0, -1.0, 1.0, 1.0}
 
 		Convey("immediately", func() {
@@ -127,14 +105,14 @@ func TestGameIntersection(t *testing.T) {
 		})
 	})
 
-	Convey("Given a new game with one entity moving trough a line on Y axis", t, func() {
+	Convey("Given a new game with one player moving trough a line on Y axis", t, func() {
 		game := &game{}
 		game.State = "running"
-		e := &entity{}
+		e := &player{}
 		e.Dimensions = [2]float64{1.0, 1.0}
 		e.Location = [2]float64{0.0, 0.0}
 		e.Velocity = [2]float64{0.1, 0.9}
-		game.Entities = append(game.Entities, e)
+		game.Players = append(game.Players, e)
 		line := [4]float64{-1.1, 1.0, 1.0, 1.0}
 
 		Convey("immediately", func() {

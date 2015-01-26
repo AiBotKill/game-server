@@ -56,13 +56,13 @@ func natsCreateGame(subj string, reply string, msg GameMessage) {
 		}
 
 		// Crate new player
-		p := NewEntity([2]float64{0, 0}, 1, g)
+		p := g.newPlayer([2]float64{0, 0}, "jack")
 
 		// Add action message handler to the new player
 		natsEncodedConn.Subscribe(p.Id+".action", func(subj string, reply string, msg *GameMessage) {
 			log.Println("player", p.Id, "actionMsg", msg)
 			if msg.Action != nil {
-				err := p.action(fmt.Sprintf("%s %f %f", msg.Action.Type, msg.Action.Direction.X, msg.Action.Direction.Y))
+				err := p.action(msg.Action.Type, Vector{msg.Action.Direction.X, msg.Action.Direction.Y})
 				if err != nil {
 					natsEncodedConn.Publish(reply, err)
 					return
