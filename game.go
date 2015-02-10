@@ -1,115 +1,164 @@
 package main
 
 import (
+	"encoding/json"
+	"errors"
 	"log"
 	"time"
 )
 
-type game struct {
-	Id         string
-	State      string
-	LastUpdate time.Time
-	Bullets    []*bullet
-	Players    []*player
+type collision struct {
+	Collider string  `json:"collider"`
+	Target   string  `json:"target"`
+	Position *Vector `json:"position"`
 }
 
-// NewGame returns a new game with random uuid and with "new" status.
-func NewGame() *game {
+type game struct {
+	Id                string        `json:"id"`
+	StartTime         time.Time     `json:"startTime"`
+	TimeLimit         time.Duration `json:"timelimit"`
+	State             string        `json:"state"`
+	GameArea          [2]float64    `json:"gameArea"`
+	Tiles             []*tile       `json:"tiles"`
+	Players           []*player     `json:"players"`
+	Bullets           []*bullet     `json:"bullets"`
+	Collisions        []*collision  `json:"collisions"`
+	StartingPositions []*Vector     `json:"startingPositions"`
+	LastUpdate        time.Time     `json:"-"`
+}
+
+func newGame(timelimit time.Duration, gameArea [2]float64) *game {
 	g := &game{}
 	g.Id = Uuid()
 	g.State = "new"
+	g.TimeLimit = timelimit
+	g.GameArea = gameArea
 	return g
 }
 
-func (g *game) gameOver() bool {
-	playerAlive := 0
-	for _, p := range g.Players {
-		if p.HitPoints > 0 {
-			playerAlive++
-		}
-	}
-	return playerAlive < 2
+func (g *game) getState() []byte {
+	b, _ := json.Marshal(g)
+	return b
 }
 
-// update runs update functions of all entities and bullets.
-func (g *game) update(dt time.Duration) {
-	g.LastUpdate = time.Now()
+func (g *game) getStateForPlayer(p *player) []byte {
+	// TODO: Hide occluded players from gamestate sent to AI.
+	return g.getState()
+}
 
-	if g.State == "running" {
+func (g *game) start() error {
+	if g.State == "new" {
+		g.State = "running"
+		g.StartTime = time.Now()
+		return nil
+	} else {
+		return errors.New("Can't start game, state is " + g.State)
+	}
+}
+
+func (g *game) hasEnded() bool {
+	if time.Since(g.StartTime) > g.TimeLimit {
+		return true
+	}
+	alivePlayers := 0
+	for _, k := range g.Players {
+		if k.Hitpoints > 0 {
+			alivePlayers++
+		}
+	}
+	if alivePlayers < 2 {
+		return true
+	}
+	return false
+}
+
+func (g *game) newPlayer(position *Vector, name string) (*player, error) {
+	if g.State != "new" {
+		return nil, errors.New("Can't create new player when game state is " + g.State)
+	}
+	p := &player{}
+	p.Id = Uuid()
+	p.Hitpoints = 100
+	p.Radius = 1
+	p.Position = position
+	p.Velocity = &Vector{0, 0}
+	p.Name = name
+	g.Players = append(g.Players, p)
+	log.Println("newplayer", p.Position, p.Velocity)
+	return p, nil
+}
+
+func (g *game) newBullet(position *Vector, velocity *Vector, firedBy string) *bullet {
+	b := &bullet{}
+	b.Id = Uuid()
+	b.Damage = 10
+	b.Radius = 0.1
+	b.Position = position
+	b.Velocity = velocity
+	b.FiredBy = firedBy
+	g.Bullets = append(g.Bullets, b)
+	return b
+}
+
+func (g *game) newTile(position *Vector, width, height float64) *tile {
+	t := &tile{}
+	t.Id = Uuid()
+	t.Width = width
+	t.Height = height
+	t.Position = position
+	t.Velocity = &Vector{0, 0}
+	g.Tiles = append(g.Tiles, t)
+	return t
+}
+
+func (g *game) rmPlayer(p *player) {
+	for i, k := range g.Players {
+		if k == p {
+			g.Players = append(g.Players[:i], g.Players[i+1:]...)
+		}
+	}
+}
+
+func (g *game) rmBullet(b *bullet) {
+	for i, k := range g.Bullets {
+		if k == b {
+			g.Bullets = append(g.Bullets[:i], g.Bullets[i+1:]...)
+		}
+	}
+}
+
+func (g *game) rmTile(t *tile) {
+	for i, k := range g.Tiles {
+		if k == t {
+			g.Tiles = append(g.Tiles[:i], g.Tiles[i+1:]...)
+		}
+	}
+}
+
+func (g *game) update() {
+	switch g.State {
+	case "new":
+	case "running":
+		g.Collisions = nil
+		dt := time.Since(g.LastUpdate)
 		for _, b := range g.Bullets {
-			b.update(dt)
+			b.update(g, dt)
+			// Remove all bullets that are dead.
+			var newBullets []*bullet
+			for _, k := range g.Bullets {
+				if !k.Dead {
+					newBullets = append(newBullets, k)
+				}
+			}
+			g.Bullets = newBullets
 		}
 		for _, p := range g.Players {
-			p.update(dt)
+			p.update(g, dt)
 		}
-		if g.gameOver() {
+		g.LastUpdate = time.Now()
+		if g.hasEnded() {
 			g.State = "ended"
 		}
+	case "ended":
 	}
-}
-
-// TODO: start gameloop
-func (g *game) start() {
-	// wait for frametime OR until every player has action set
-	// update everything
-}
-
-// intersectionPoint returns cordinates of intersection between two lines, or nil if they do not collide.
-func intersectionPoint(x1, y1, x2, y2, x3, y3, x4, y4 float64) []float64 {
-	d := (x1-x2)*(y3-y4) - (y1-y2)*(x3-x4)
-	if d != 0 {
-		xi := ((x3-x4)*(x1*y2-y1*x2) - (x1-x2)*(x3*y4-y3*x4)) / d
-		yi := ((y3-y4)*(x1*y2-y1*x2) - (y1-y2)*(x3*y4-y3*x4)) / d
-		if (x1 < xi && x2 < xi) || (x1 > xi && x2 > xi) ||
-			(y1 < yi && y2 < yi) || (y1 > yi && y2 > yi) ||
-			(x3 < xi && x4 < xi) || (x3 > xi && x4 > xi) ||
-			(y3 < yi && y4 < yi) || (y3 > yi && y4 > yi) {
-			return nil
-		}
-		return []float64{xi, yi}
-	}
-	return nil
-}
-
-type collision struct {
-	Entity *player
-	Point  [2]float64
-}
-
-func (g *game) collision(vector [4]float64) []*collision {
-	// Loop trough all entities, optimize opportunity with culling.
-	var collisions []*collision
-	for _, e := range g.Players {
-		// Crate collision borders over entity being checed.
-		xmin := e.Location[0] - (e.Dimensions[0] / 2.0)
-		ymin := e.Location[1] - (e.Dimensions[1] / 2.0)
-		xmax := e.Location[0] + (e.Dimensions[0] / 2.0)
-		ymax := e.Location[1] + (e.Dimensions[1] / 2.0)
-		borders := [][4]float64{[4]float64{xmin, ymin, xmax, ymin},
-			[4]float64{xmin, ymin, xmin, ymax},
-			[4]float64{xmax, ymin, xmax, ymax},
-			[4]float64{xmin, ymax, xmax, ymax}}
-
-		// Test intersections against all borders
-		for _, b := range borders {
-			if i := intersectionPoint(vector[0], vector[1], vector[2], vector[3], b[0], b[1], b[2], b[3]); i != nil {
-				log.Println(b)
-				collisions = append(collisions, &collision{e, [2]float64{i[0], i[1]}})
-			}
-		}
-	}
-	return collisions
-}
-
-// newBullet adds a new bullet to the bullet updatelist with given location, velocity and damage
-func (g *game) newBullet(location [2]float64, velocity Vector, damage float64, shooter *player) {
-	log.Println(shooter.entity.Game)
-	b := NewBullet(location, velocity, damage, g, shooter)
-	g.Bullets = append(g.Bullets, b)
-}
-
-func (g *game) newPlayer(location [2]float64, name string) *player {
-	p := newPlayer(location, g)
-	g.Players = append(g.Players, p)
-	return p
 }
