@@ -8,7 +8,7 @@ go get github.com/AiBotKill/game-server
 
 ## NATS communication
 
-#### "registerAi"
+#### registerAi
 
 Request
 
@@ -51,7 +51,7 @@ type IdReplyMsg struct {
 }
 ```
 
-#### <gameId>.createPlayer
+#### GAMEID.createPlayer
 
 Request
 
@@ -72,7 +72,7 @@ type IdReplyMsg struct {
 }
 ```
 
-#### <gameId>.start
+#### GAMEID.start
 
 Request
 
@@ -91,7 +91,7 @@ type IdReplyMsg struct {
 }
 ```
 
-#### <playerId>.action
+#### PLAYERID.action
 
 Request
 
