@@ -17,6 +17,8 @@ func main() {
 	}
 	serviceId = Uuid()
 
+	natsInit()
+
 	// Logging server stats until the server is stopped.
 	goRoutines := 0
 	for {
@@ -88,6 +90,8 @@ func natsInit() {
 	})
 	if err != nil {
 		log.Panicln("Can't publish newGameserver message:", err.Error())
+	} else {
+		log.Println("Published newGameServer")
 	}
 
 	// When AI-Server accepts an AI message, publish the news for console.
@@ -153,6 +157,7 @@ func natsInit() {
 			return
 		}
 
+		// Handler for "<gameId>.start"
 		_, err = natsEncodedConn.Subscribe(g.Id+".start", func(subj string, reply string, msg *StartGameMsg) {
 			err := g.start()
 			if err != nil {
@@ -187,6 +192,9 @@ func natsInit() {
 
 				if g.State == "end" {
 					log.Println("Game " + g.Id + " has ended.")
+
+					natsEncodedConn.Publish(g.Id+"gameEnd", g.getState())
+
 					return
 				}
 			}

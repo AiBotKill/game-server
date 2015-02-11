@@ -5,10 +5,11 @@ import "time"
 type player struct {
 	Id string `json:"id"`
 	Circle
-	Name       string  `json:"name"`
-	LookingAt  *Vector `json:"lookingAt"`
-	Hitpoints  float64 `json:"hitpoints"`
-	DamageMade float64 `json:"damageMade"`
+	Name       string   `json:"name"`
+	LookingAt  *Vector  `json:"lookingAt"`
+	Hitpoints  float64  `json:"hitpoints"`
+	DamageMade float64  `json:"damageMade"`
+	Killed     []string `json:"killed"`
 	Action     struct {
 		Type      string  `json:"type"`
 		Direction *Vector `json:"direction"`
