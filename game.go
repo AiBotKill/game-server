@@ -19,6 +19,8 @@ type game struct {
 	TimeLimit         time.Duration `json:"timelimit"`
 	State             string        `json:"state"`
 	GameArea          [2]float64    `json:"gameArea"`
+	Mode              string        `json:"mode"`
+	Environment       string        `json:"environment"`
 	Tiles             []*tile       `json:"tiles"`
 	Players           []*player     `json:"players"`
 	Bullets           []*bullet     `json:"bullets"`
@@ -42,13 +44,16 @@ func (g *game) getState() []byte {
 }
 
 func (g *game) getStateForPlayer(p *player) []byte {
-	// TODO: Hide occluded players from gamestate sent to AI.
+	// TODO: Hide occluded players from gamestate sent to AI. (not critical)
 	return g.getState()
 }
 
 func (g *game) start() error {
 	if g.State == "new" {
 		log.Println("game starting")
+
+		// TODO: Randomize player positions!
+
 		g.State = "running"
 		g.StartTime = time.Now()
 		return nil
@@ -76,7 +81,7 @@ func (g *game) hasEnded() bool {
 	}
 	if alivePlayers < 2 {
 		log.Println("Outtaplayers, ending game.")
-		return true
+		//return true
 	}
 	return false
 }
@@ -93,6 +98,7 @@ func (g *game) newPlayer(position *Vector, name string) (*player, error) {
 	p.Velocity = &Vector{0, 0}
 	p.Name = name
 	g.Players = append(g.Players, p)
+	p.LookingAt = &Vector{p.Position.X, p.Position.Y}
 	log.Println("newplayer", p.Position, p.Velocity)
 	return p, nil
 }

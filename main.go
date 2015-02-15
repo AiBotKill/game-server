@@ -80,8 +80,16 @@ func natsInit() {
 	// Subscribe to createGame
 	natsEncodedConn.Subscribe("createGame", func(subj string, reply string, msg *CreateGameMsg) {
 		// Create game
-		timeLimit := msg.TimeLimit
-		g := newGame(timeLimit, msg.GameArea)
+		g := newGame()
+		g.GameArea = msg.GameArea
+		g.TimeLimit = msg.TimeLimit
+		g.StartingPositions = msg.StartingPositions
+		g.Mode = msg.Mode
+
+		for _, t := range msg.Tiles {
+			pos := &Vector{t.X + 0.5, t.Y + 0.5}
+			g.newTile(pos, 1, 1)
+		}
 
 		// Subscribe to gameId.join
 		natsEncodedConn.Subscribe(g.Id+".join", func(subj string, reply string, msg *JoinMsg) {
@@ -173,9 +181,14 @@ type JoinRequest struct {
 // CreateGameMsg is sent by game-console to create a new game.
 // Replied with IdReplyMsg
 type CreateGameMsg struct {
-	TimeLimit         time.Duration          `json:"timeLimit"`
-	GameArea          [2]float64             `json:"gameArea"`
-	Tiles             []*tile                `json:"tiles"`
+	TimeLimit   time.Duration `json:"timeLimit"`
+	Environment string        `json:"environment"`
+	GameArea    [2]float64    `json:"gameArea"`
+	Tiles       []struct {
+		Type string  `json:"type"`
+		X    float64 `json:"x"`
+		Y    float64 `json:"y"`
+	} `json:"tiles"`
 	StartingPositions []*Vector              `json:"startingPositions"`
 	Mode              string                 `json:"mode"`
 	Players           []*CreateGameMsgPlayer `json:"players"`
