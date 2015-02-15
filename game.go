@@ -29,12 +29,10 @@ type game struct {
 	LastUpdate        time.Time     `json:"-"`
 }
 
-func newGame(timelimit time.Duration, gameArea [2]float64) *game {
+func newGame() *game {
 	g := &game{}
 	g.Id = Uuid()
 	g.State = "new"
-	g.TimeLimit = timelimit
-	g.GameArea = gameArea
 	return g
 }
 
