@@ -3,8 +3,9 @@ package main
 import "time"
 
 type player struct {
-	Id string `json:"id"`
 	Circle
+	Id         string   `json:"id"`
+	BotId      string   `json:"botId"`
 	Name       string   `json:"name"`
 	LookingAt  *Vector  `json:"lookingAt"`
 	Hitpoints  float64  `json:"hitpoints"`

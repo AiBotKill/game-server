@@ -48,6 +48,7 @@ func (g *game) getStateForPlayer(p *player) []byte {
 
 func (g *game) start() error {
 	if g.State == "new" {
+		log.Println("game starting")
 		g.State = "running"
 		g.StartTime = time.Now()
 		return nil
@@ -56,8 +57,15 @@ func (g *game) start() error {
 	}
 }
 
+func (g *game) end() error {
+	log.Println("game ending")
+	g.State = "end"
+	return nil
+}
+
 func (g *game) hasEnded() bool {
 	if time.Since(g.StartTime) > g.TimeLimit {
+		log.Println("Outtatime")
 		return true
 	}
 	alivePlayers := 0
@@ -67,6 +75,7 @@ func (g *game) hasEnded() bool {
 		}
 	}
 	if alivePlayers < 2 {
+		log.Println("Outtaplayers, ending game.")
 		return true
 	}
 	return false
@@ -157,7 +166,7 @@ func (g *game) update() {
 		}
 		g.LastUpdate = time.Now()
 		if g.hasEnded() {
-			g.State = "ended"
+			g.end()
 		}
 	case "ended":
 	}
