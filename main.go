@@ -77,7 +77,7 @@ func natsInit() {
 		// Create game
 		g := newGame()
 		g.GameArea = msg.GameArea
-		g.TimeLimit = msg.TimeLimit
+		g.TimeLimit = time.Duration(msg.TimeLimit) * time.Second
 		g.StartingPositions = msg.StartingPositions
 		g.Mode = msg.Mode
 
@@ -176,9 +176,9 @@ type JoinRequest struct {
 // CreateGameMsg is sent by game-console to create a new game.
 // Replied with IdReplyMsg
 type CreateGameMsg struct {
-	TimeLimit   time.Duration `json:"timeLimit"`
-	Environment string        `json:"environment"`
-	GameArea    [2]float64    `json:"gameArea"`
+	TimeLimit   int64      `json:"timeLimit"`
+	Environment string     `json:"environment"`
+	GameArea    [2]float64 `json:"gameArea"`
 	Tiles       []struct {
 		Type string  `json:"type"`
 		X    float64 `json:"x"`
