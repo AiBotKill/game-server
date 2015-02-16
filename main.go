@@ -1,7 +1,6 @@
 package main
 
 import (
-	//"github.com/apcera/nats"
 	"log"
 	"runtime"
 	"time"
