@@ -99,7 +99,7 @@ func natsInit() {
 		})
 
 		// Subscribe to gameId.start
-		natsEncodedConn.Subscribe(g.Id+".start", func(subj string, reply string, msg *JoinMsg) {
+		natsEncodedConn.Subscribe(g.Id+".start", func(subj string, reply string, msg *StartGameMsg) {
 			err := g.start()
 			if err != nil {
 				natsEncodedConn.Publish(reply, Reply{Status: "error", Error: err.Error()})
