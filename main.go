@@ -2,7 +2,6 @@ package main
 
 import (
 	"log"
-	"runtime"
 	"time"
 )
 
@@ -20,18 +19,15 @@ func main() {
 	natsInit()
 
 	// Logging server stats until the server is stopped.
-	goRoutines := 0
 	for {
-		nim := natsEncodedConn.Conn.InMsgs
-		nib := natsEncodedConn.Conn.InBytes
-		nom := natsEncodedConn.Conn.OutMsgs
-		nob := natsEncodedConn.Conn.OutBytes
-		log.Println(nim, nib, nom, nob)
-
-		time.Sleep(time.Second * 1)
-		if goRoutines != runtime.NumGoroutine() {
-			goRoutines = runtime.NumGoroutine()
-			log.Println("Goroutines [", goRoutines, "]")
+		<-time.After(time.Second * 1)
+		err := natsEncodedConn.Publish("ping", map[string]interface{}{
+			"ping":      "gameServer",
+			"serviceId": serviceId,
+			"time":      time.Now().String(),
+		})
+		if err != nil {
+			log.Println(err.Error())
 		}
 	}
 }

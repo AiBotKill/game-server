@@ -26,19 +26,9 @@ func startNats() error {
 		url = ("nats://" + addr + ":" + port)
 	}
 
-	var c *nats.Conn
-	natsc, err := nats.Connect(url)
-
+	c, err := nats.Connect(url)
 	if err != nil {
-		debugGnatsd()
-		natsc, err := nats.Connect(nats.DefaultURL)
-		if err != nil {
-			return err
-		} else {
-			c = natsc
-		}
-	} else {
-		c = natsc
+		return err
 	}
 
 	nc, err := nats.NewEncodedConn(c, "json")
