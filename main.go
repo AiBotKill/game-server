@@ -1,8 +1,11 @@
 package main
 
 import (
+	"encoding/json"
 	"log"
 	"time"
+
+	"github.com/apcera/nats"
 )
 
 // servoiceId acts as the Id for this instance of game-server.
@@ -74,6 +77,9 @@ func natsInit() {
 
 	// Subscribe to createGame
 	natsEncodedConn.Subscribe("createGame", func(subj string, reply string, msg *CreateGameMsg) {
+		// After
+		var subs []*nats.Subscription
+
 		// Create game
 		g := newGame()
 		g.GameArea = msg.GameArea
@@ -87,68 +93,105 @@ func natsInit() {
 		}
 
 		// Subscribe to gameId.join
-		natsEncodedConn.Subscribe(g.Id+".join", func(subj string, reply string, msg *JoinMsg) {
-			log.Println("join request from", msg.BotId)
-			p, err := g.newPlayer(&Vector{0, 0}, msg.Name)
-			if err != nil {
-				log.Println("Error creating player:", err.Error())
+		if sub, err := natsConn.Subscribe(g.Id+".join", func(msg *nats.Msg) {
+			var joinMsg JoinMsg
+			if err := json.Unmarshal(msg.Data, &joinMsg); err != nil {
+				natsConn.Publish(msg.Reply, NewReply(g.Id, err))
+				return
 			}
-			p.BotId = msg.BotId
-			log.Println("join from", msg)
-			natsEncodedConn.Publish(reply, Reply{Status: "ok", Id: g.Id})
-		})
+			p, err := g.newPlayer(&Vector{0, 0}, joinMsg.Name)
+			if err != nil {
+				natsConn.Publish(msg.Reply, NewReply(g.Id, err))
+				return
+			}
+			p.BotId = joinMsg.BotId
+			natsConn.Publish(msg.Reply, NewReply(g.Id, err))
+			natsConn.Subscribe(p.BotId+".action", func(msg *nats.Msg) {
+
+			})
+		}); err != nil {
+			log.Println(err.Error())
+		} else {
+			subs = append(subs, sub)
+		}
 
 		// Subscribe to gameId.start
-		natsEncodedConn.Subscribe(g.Id+".start", func(subj string, reply string, msg *StartGameMsg) {
+		if sub, err := natsConn.Subscribe(g.Id+".start", func(msg *nats.Msg) {
 			err := g.start()
-			if err != nil {
-				natsEncodedConn.Publish(reply, Reply{Status: "error", Error: err.Error()})
-			}
-			natsEncodedConn.Publish(reply, Reply{Status: "ok", Id: g.Id})
-		})
+			natsConn.Publish(msg.Reply, NewReply(g.Id, err))
+		}); err != nil {
+			log.Println(err.Error())
+		} else {
+			subs = append(subs, sub)
+		}
 
-		// Subscribe to gameId.start
-		natsEncodedConn.Subscribe(g.Id+".end", func(subj string, reply string, msg *EndGameRequest) {
+		// Subscribe to gameId.end
+		if sub, err := natsConn.Subscribe(g.Id+".end", func(msg *nats.Msg) {
 			err := g.end()
-			if err != nil {
-				natsEncodedConn.Publish(reply, Reply{Status: "error", Error: err.Error()})
-			}
-			natsEncodedConn.Publish(reply, Reply{Status: "ok", Id: g.Id})
-		})
+			natsConn.Publish(msg.Reply, NewReply(g.Id, err))
+		}); err != nil {
+			log.Println(err.Error())
+		} else {
+			subs = append(subs, sub)
+		}
 
 		// Invite players
 		for _, p := range msg.Players {
-			natsEncodedConn.Publish("aiserver."+p.BotId, JoinRequest{
+			joinReq := &JoinRequest{
 				Type:     "joinRequest",
 				GameId:   g.Id,
 				GameMode: msg.Mode,
-			})
+			}
+			b, _ := json.Marshal(joinReq)
+			natsConn.Publish(p.BotId+".joinRequest", b)
 		}
 
 		// Reply game creator with id.
-		natsEncodedConn.Publish(reply, &Reply{
-			Id:     g.Id,
-			Status: "ok",
-		})
+		natsConn.Publish(reply, NewReply(g.Id, nil))
 
 		go func() {
 			for {
 				<-time.After(time.Second)
-				g.update()
+				g.update(time.Millisecond * 100) // TODO some logic for this!
 				log.Println("game update: " + g.State)
+
 				err := natsEncodedConn.Publish(g.Id+".gamestate", string(g.getState()))
 				if err != nil {
 					log.Println(err.Error())
 				}
 
 				if g.State == "end" {
+					// Game has ended, clean up and publish gameEnd message.
 					log.Println("Game " + g.Id + " has ended.")
-					natsEncodedConn.Publish(g.Id+"gameEnd", string(g.getState()))
+					natsConn.Publish(g.Id+".gameEnd", g.getState())
+
+					// Unsubscribe all subscriptions made during this game.
+					for _, sub := range subs {
+						if err := sub.Unsubscribe(); err != nil {
+							log.Println(err.Error())
+						}
+					}
 					return
 				}
 			}
 		}()
 	})
+}
+
+func NewReply(id string, err error) []byte {
+	reply := &Reply{
+		Type: "reply",
+		Id:   id,
+	}
+	if err != nil {
+		reply.Status = "error"
+		reply.Error = err.Error()
+	} else {
+		reply.Status = "ok"
+	}
+
+	b, _ := json.Marshal(&reply)
+	return b
 }
 
 type GameStateMsg struct {
@@ -162,6 +205,7 @@ type JoinMsg struct {
 }
 
 type Reply struct {
+	Type   string `json:"type"`
 	Status string `json:"status"`
 	Id     string `json:"id"`
 	Error  string `json:"error,omitempty"`
@@ -173,8 +217,6 @@ type JoinRequest struct {
 	GameMode string `json:"gameMode"`
 }
 
-// CreateGameMsg is sent by game-console to create a new game.
-// Replied with IdReplyMsg
 type CreateGameMsg struct {
 	TimeLimit   int64      `json:"timeLimit"`
 	Environment string     `json:"environment"`
@@ -192,12 +234,4 @@ type CreateGameMsg struct {
 type CreateGameMsgPlayer struct {
 	Team  int    `json:"team"`
 	BotId string `json:"botId"`
-}
-
-// StartGameMsg is sent to "<gameId>.start", which will trigger start if the
-// game state is not "new"
-type StartGameMsg struct {
-}
-
-type EndGameRequest struct {
 }

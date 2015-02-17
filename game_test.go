@@ -58,7 +58,7 @@ func TestGame(t *testing.T) {
 		done <- true
 	})
 
-	req := &CreateGameMsg{TimeLimit: time.Second * 20}
+	req := &CreateGameMsg{TimeLimit: 60}
 	var plrs []*CreateGameMsgPlayer
 	plrs = append(plrs, &CreateGameMsgPlayer{BotId: "B123"})
 	plrs = append(plrs, &CreateGameMsgPlayer{BotId: "B124"})

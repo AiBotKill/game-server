@@ -7,6 +7,16 @@ import (
 	"time"
 )
 
+type gameStateMsg struct {
+	Type       string    `json:"type"`
+	Id         string    `json:"id"`
+	StartTime  time.Time `json:"startTime`
+	TimeLeftMs float64   `json:"timeLeftMs"`
+	State      string    `json:"state"`
+	Players    []*player `json:"players"`
+	Bullets    []*bullet `json:"bullets"`
+}
+
 type collision struct {
 	Collider string  `json:"collider"`
 	Target   string  `json:"target"`
@@ -16,7 +26,7 @@ type collision struct {
 type game struct {
 	Id                string        `json:"id"`
 	StartTime         time.Time     `json:"startTime"`
-	TimeLimit         time.Duration `json:"timelimit"`
+	TimeLimit         time.Duration `json:"timeLimit"`
 	State             string        `json:"state"`
 	GameArea          [2]float64    `json:"gameArea"`
 	Mode              string        `json:"mode"`
@@ -37,7 +47,14 @@ func newGame() *game {
 }
 
 func (g *game) getState() []byte {
-	b, _ := json.Marshal(g)
+	gs := &gameStateMsg{}
+	gs.Type = "gamestate"
+	gs.Id = g.Id
+	gs.StartTime = g.StartTime
+	gs.TimeLeftMs = g.StartTime.Add(g.TimeLimit).Sub(g.LastUpdate).Seconds()
+	gs.Players = g.Players
+	gs.Bullets = g.Bullets
+	b, _ := json.Marshal(gs)
 	return b
 }
 
@@ -148,12 +165,11 @@ func (g *game) rmTile(t *tile) {
 	}
 }
 
-func (g *game) update() {
+func (g *game) update(dt time.Duration) {
 	switch g.State {
 	case "new":
 	case "running":
 		g.Collisions = nil
-		dt := time.Since(g.LastUpdate)
 		for _, b := range g.Bullets {
 			b.update(g, dt)
 			// Remove all bullets that are dead.
