@@ -50,8 +50,8 @@ func (g *game) getState() []byte {
 	gs := &gameStateMsg{}
 	gs.Type = "gamestate"
 	gs.Id = g.Id
-	gs.StartTime = g.StartTime
-	gs.TimeLeftMs = g.StartTime.Add(g.TimeLimit).Sub(g.LastUpdate).Seconds()
+	//gs.StartTime = g.StartTime
+	//gs.TimeLeftMs = g.StartTime.Add(g.TimeLimit).Sub(g.LastUpdate).Seconds()
 	gs.Players = g.Players
 	gs.Bullets = g.Bullets
 	gs.State = g.State
