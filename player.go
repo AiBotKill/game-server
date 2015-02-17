@@ -7,6 +7,7 @@ type player struct {
 	Id         string   `json:"id"`
 	BotId      string   `json:"botId"`
 	Name       string   `json:"name"`
+	Team       int64    `json:"team"`
 	LookingAt  *Vector  `json:"lookingAt"`
 	Hitpoints  float64  `json:"hitpoints"`
 	DamageMade float64  `json:"damageMade"`
