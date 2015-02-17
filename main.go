@@ -224,10 +224,12 @@ func natsInit() {
 		go func() {
 			for {
 				<-time.After(time.Second)
-				g.update(time.Millisecond * 100) // TODO some logic for this!
+				//g.update(time.Millisecond * 100) // TODO some logic for this!
 				log.Println("game update: " + g.State)
 
-				err := natsConn.Publish(g.Id+".gameState", g.getState())
+				b := g.getState()
+				err := natsConn.Publish(g.Id+".gameState", b)
+
 				if err != nil {
 					log.Println(err.Error())
 				}
