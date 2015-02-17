@@ -231,6 +231,7 @@ func natsInit() {
 				if err != nil {
 					log.Println(err.Error())
 				}
+				log.Println("ok...")
 
 				if g.State == "end" {
 					// Game has ended, clean up and publish gameEnd message.

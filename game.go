@@ -187,9 +187,9 @@ func (g *game) update(dt time.Duration) {
 			}
 		*/
 		g.LastUpdate = time.Now()
-		if g.hasEnded() {
+		/*if g.hasEnded() {
 			g.end()
-		}
+		}*/
 	case "ended":
 	}
 }
