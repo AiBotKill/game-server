@@ -102,11 +102,13 @@ func natsInit() {
 		if sub, err := natsConn.Subscribe(g.Id+".join", func(msg *nats.Msg) {
 			var joinMsg JoinMsg
 			if err := json.Unmarshal(msg.Data, &joinMsg); err != nil {
+				log.Println("ERROR:", err.Error())
 				natsConn.Publish(msg.Reply, NewReply(g.Id, err))
 				return
 			}
 			p, err := g.newPlayer(&Vector{0, 0}, joinMsg.Name)
 			if err != nil {
+				log.Println("ERROR:", err.Error())
 				natsConn.Publish(msg.Reply, NewReply(g.Id, err))
 				return
 			}
@@ -115,18 +117,23 @@ func natsInit() {
 			if sub, err := natsConn.Subscribe(p.BotId+".action", func(msg *nats.Msg) {
 				var action ActionMsg
 				if err := json.Unmarshal(msg.Data, &action); err != nil {
+					log.Println("ERROR:", err.Error())
 					natsConn.Publish(msg.Reply, NewReply(g.Id, err))
 					return
 				}
 				p.Action.Type = action.Type
 				p.Action.Direction = action.Direction
 			}); err != nil {
-				log.Println(err.Error())
+				log.Println("ERROR:", err.Error())
+				natsConn.Publish(msg.Reply, NewReply(g.Id, err))
+				return
 			} else {
 				subs = append(subs, sub)
 			}
 		}); err != nil {
-			log.Println(err.Error())
+			natsConn.Publish(msg.Reply, NewReply(g.Id, err))
+			log.Println("ERROR:", err.Error())
+			return
 		} else {
 			subs = append(subs, sub)
 		}
