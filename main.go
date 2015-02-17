@@ -76,18 +76,24 @@ func natsInit() {
 	}
 
 	// Subscribe to createGame
-	natsEncodedConn.Subscribe("createGame", func(subj string, reply string, msg *CreateGameMsg) {
-		// After
+	natsConn.Subscribe("createGame", func(msg *nats.Msg) {
 		var subs []*nats.Subscription
+
+		var createGameMsg CreateGameMsg
+		err := json.Unmarshal(msg.Data, &createGameMsg)
+		if err != nil {
+			natsConn.Publish(msg.Reply, NewReply("", err))
+			return
+		}
 
 		// Create game
 		g := newGame()
-		g.GameArea = msg.GameArea
-		g.TimeLimit = time.Duration(msg.TimeLimit) * time.Second
-		g.StartingPositions = msg.StartingPositions
-		g.Mode = msg.Mode
+		g.GameArea = createGameMsg.GameArea
+		g.TimeLimit = time.Duration(createGameMsg.TimeLimit) * time.Second
+		g.StartingPositions = createGameMsg.StartingPositions
+		g.Mode = createGameMsg.Mode
 
-		for _, t := range msg.Tiles {
+		for _, t := range createGameMsg.Tiles {
 			pos := &Vector{t.X + 0.5, t.Y + 0.5}
 			g.newTile(pos, 1, 1)
 		}
@@ -106,9 +112,19 @@ func natsInit() {
 			}
 			p.BotId = joinMsg.BotId
 			natsConn.Publish(msg.Reply, NewReply(g.Id, err))
-			natsConn.Subscribe(p.BotId+".action", func(msg *nats.Msg) {
-
-			})
+			if sub, err := natsConn.Subscribe(p.BotId+".action", func(msg *nats.Msg) {
+				var action ActionMsg
+				if err := json.Unmarshal(msg.Data, &action); err != nil {
+					natsConn.Publish(msg.Reply, NewReply(g.Id, err))
+					return
+				}
+				p.Action.Type = action.Type
+				p.Action.Direction = action.Direction
+			}); err != nil {
+				log.Println(err.Error())
+			} else {
+				subs = append(subs, sub)
+			}
 		}); err != nil {
 			log.Println(err.Error())
 		} else {
@@ -136,18 +152,18 @@ func natsInit() {
 		}
 
 		// Invite players
-		for _, p := range msg.Players {
+		for _, p := range createGameMsg.Players {
 			joinReq := &JoinRequest{
 				Type:     "joinRequest",
 				GameId:   g.Id,
-				GameMode: msg.Mode,
+				GameMode: createGameMsg.Mode,
 			}
 			b, _ := json.Marshal(joinReq)
 			natsConn.Publish(p.BotId+".joinRequest", b)
 		}
 
 		// Reply game creator with id.
-		natsConn.Publish(reply, NewReply(g.Id, nil))
+		natsConn.Publish(msg.Reply, NewReply(g.Id, nil))
 
 		go func() {
 			for {
