@@ -179,7 +179,7 @@ func natsInit() {
 			}
 		*/
 
-		// Subscribe to gameId.start
+		/*// Subscribe to gameId.start
 		if sub, err := natsConn.Subscribe(g.Id+".start", func(msg *nats.Msg) {
 			err := g.start()
 			if err != nil {
@@ -193,6 +193,16 @@ func natsInit() {
 		}); err != nil {
 			natsConn.Publish(msg.Reply, NewReply(g.Id, err))
 			log.Println("ERROR:", err.Error())
+		} else {
+			subs = append(subs, sub)
+		}*/
+
+		// Subscribe to gameId.end
+		if sub, err := natsConn.Subscribe(g.Id+".start", func(msg *nats.Msg) {
+			err := g.start()
+			natsConn.Publish(msg.Reply, NewReply(g.Id, err))
+		}); err != nil {
+			log.Println(err.Error())
 		} else {
 			subs = append(subs, sub)
 		}
