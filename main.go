@@ -200,7 +200,7 @@ func natsInit() {
 		}
 
 		// Invite players
-		for _, p := range createGameMsg.Players {
+		/*for _, p := range createGameMsg.Players {
 			joinReq := &JoinRequest{
 				Type:     "joinRequest",
 				GameId:   g.Id,
@@ -208,7 +208,7 @@ func natsInit() {
 			}
 			b, _ := json.Marshal(joinReq)
 			natsConn.Publish(p.BotId+".joinRequest", b)
-		}
+		}*/
 
 		// Reply game creator with id.
 		natsConn.Publish(msg.Reply, NewReply(g.Id, nil))
