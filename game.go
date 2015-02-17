@@ -54,7 +54,11 @@ func (g *game) getState() []byte {
 	gs.TimeLeftMs = g.StartTime.Add(g.TimeLimit).Sub(g.LastUpdate).Seconds()
 	gs.Players = g.Players
 	gs.Bullets = g.Bullets
-	b, _ := json.Marshal(gs)
+	gs.State = g.State
+	b, err := json.Marshal(gs)
+	if err != nil {
+		log.Println("error marshaling:" + err.Error())
+	}
 	return b
 }
 
