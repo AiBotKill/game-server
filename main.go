@@ -98,6 +98,9 @@ func natsInit() {
 			g.newTile(pos, 1, 1)
 		}
 
+		//for _, p := range createGameMsg.Players {
+		//}
+
 		// Subscribe to gameId.join
 		if sub, err := natsConn.Subscribe(g.Id+".join", func(msg *nats.Msg) {
 			var joinMsg JoinMsg
@@ -112,7 +115,9 @@ func natsInit() {
 				natsConn.Publish(msg.Reply, NewReply(g.Id, err))
 				return
 			}
+
 			p.BotId = joinMsg.BotId
+
 			natsConn.Publish(msg.Reply, NewReply(g.Id, err))
 			if sub, err := natsConn.Subscribe(p.BotId+".action", func(msg *nats.Msg) {
 				var action ActionMsg
@@ -174,7 +179,7 @@ func natsInit() {
 
 		go func() {
 			for {
-				<-time.After(time.Second)
+				<-time.After(time.Second * 5)
 				g.update(time.Millisecond * 100) // TODO some logic for this!
 				log.Println("game update: " + g.State)
 
