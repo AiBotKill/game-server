@@ -190,7 +190,7 @@ func (g *game) update(dt time.Duration) {
 				p.update(g, dt)
 			}
 		*/
-		g.LastUpdate = time.Now()
+		//g.LastUpdate = time.Now()
 		/*if g.hasEnded() {
 			g.end()
 		}*/
