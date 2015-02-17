@@ -111,7 +111,15 @@ func natsInit() {
 
 			// Subscribe to "botId.action" address.
 			if sub, err := natsConn.Subscribe(p.BotId+".action", func(msg *nats.Msg) {
-				log.Println(string(msg.Data))
+				var action ActionMsg
+				if err := json.Unmarshal(msg.Data, &action); err != nil {
+					log.Println("ERROR:", err.Error())
+					natsConn.Publish(msg.Reply, NewReply(g.Id, err))
+					return
+				}
+				p.Action.Type = action.Type
+				p.Action.Direction = action.Direction
+				natsConn.Publish(msg.Reply, NewReply(g.Id, nil))
 			}); err != nil {
 				natsConn.Publish(msg.Reply, NewReply(g.Id, err))
 				log.Println("ERROR:", err.Error())
