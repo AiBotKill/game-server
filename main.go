@@ -182,9 +182,17 @@ func natsInit() {
 		// Subscribe to gameId.start
 		if sub, err := natsConn.Subscribe(g.Id+".start", func(msg *nats.Msg) {
 			err := g.start()
-			natsConn.Publish(msg.Reply, NewReply(g.Id, err))
+			if err != nil {
+				natsConn.Publish(msg.Reply, NewReply(g.Id, err))
+				log.Println("ERROR:", err.Error())
+			}
+			if err := natsConn.Publish(msg.Reply, NewReply(g.Id, err)); err != nil {
+				natsConn.Publish(msg.Reply, NewReply(g.Id, err))
+				log.Println("ERROR:", err.Error())
+			}
 		}); err != nil {
-			log.Println(err.Error())
+			natsConn.Publish(msg.Reply, NewReply(g.Id, err))
+			log.Println("ERROR:", err.Error())
 		} else {
 			subs = append(subs, sub)
 		}
