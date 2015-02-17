@@ -23,7 +23,7 @@ func main() {
 
 	// Logging server stats until the server is stopped.
 	for {
-		<-time.After(time.Second * 1)
+		<-time.After(time.Second * 5)
 		err := natsEncodedConn.Publish("ping", map[string]interface{}{
 			"ping":      "gameServer",
 			"serviceId": serviceId,
@@ -179,7 +179,7 @@ func natsInit() {
 
 		go func() {
 			for {
-				<-time.After(time.Second * 5)
+				<-time.After(time.Second)
 				g.update(time.Millisecond * 100) // TODO some logic for this!
 				log.Println("game update: " + g.State)
 
