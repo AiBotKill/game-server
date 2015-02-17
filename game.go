@@ -8,13 +8,13 @@ import (
 )
 
 type gameStateMsg struct {
-	Type       string    `json:"type"`
-	Id         string    `json:"id"`
-	StartTime  time.Time `json:"startTime`
-	TimeLeftMs float64   `json:"timeLeftMs"`
-	State      string    `json:"state"`
-	Players    []*player `json:"players"`
-	Bullets    []*bullet `json:"bullets"`
+	Type string `json:"type"`
+	Id   string `json:"id"`
+	//StartTime  time.Time `json:"startTime`
+	//TimeLeftMs float64   `json:"timeLeftMs"`
+	State   string    `json:"state"`
+	Players []*player `json:"players"`
+	Bullets []*bullet `json:"bullets"`
 }
 
 type collision struct {
