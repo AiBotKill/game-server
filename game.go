@@ -8,13 +8,13 @@ import (
 )
 
 type gameStateMsg struct {
-	Type string `json:"type"`
-	Id   string `json:"id"`
-	//StartTime  time.Time `json:"startTime`
-	//TimeLeftMs float64   `json:"timeLeftMs"`
-	State   string    `json:"state"`
-	Players []*player `json:"players"`
-	Bullets []*bullet `json:"bullets"`
+	Type       string    `json:"type"`
+	Id         string    `json:"id"`
+	StartTime  time.Time `json:"startTime`
+	TimeLeftMs float64   `json:"timeLeftMs"`
+	State      string    `json:"state"`
+	Players    []*player `json:"players"`
+	Bullets    []*bullet `json:"bullets"`
 }
 
 type collision struct {
@@ -50,8 +50,8 @@ func (g *game) getState() []byte {
 	gs := &gameStateMsg{}
 	gs.Type = "gamestate"
 	gs.Id = g.Id
-	//gs.StartTime = g.StartTime
-	//gs.TimeLeftMs = g.StartTime.Add(g.TimeLimit).Sub(g.LastUpdate).Seconds()
+	gs.StartTime = g.StartTime
+	gs.TimeLeftMs = g.StartTime.Add(g.TimeLimit).Sub(g.LastUpdate).Seconds()
 	gs.Players = g.Players
 	gs.Bullets = g.Bullets
 	gs.State = g.State
@@ -173,27 +173,26 @@ func (g *game) update(dt time.Duration) {
 	switch g.State {
 	case "new":
 	case "running":
-		/*
-			g.Collisions = nil
-			for _, b := range g.Bullets {
-				b.update(g, dt)
-				// Remove all bullets that are dead.
-				var newBullets []*bullet
-				for _, k := range g.Bullets {
-					if !k.Dead {
-						newBullets = append(newBullets, k)
-					}
+		g.Collisions = nil
+		for _, b := range g.Bullets {
+			b.update(g, dt)
+			// Remove all bullets that are dead.
+			var newBullets []*bullet
+			for _, k := range g.Bullets {
+				if !k.Dead {
+					newBullets = append(newBullets, k)
 				}
-				g.Bullets = newBullets
 			}
-			for _, p := range g.Players {
-				p.update(g, dt)
-			}
-		*/
-		//g.LastUpdate = time.Now()
-		/*if g.hasEnded() {
+			g.Bullets = newBullets
+		}
+		for _, p := range g.Players {
+			p.update(g, dt)
+		}
+
+		g.LastUpdate = time.Now()
+		if g.hasEnded() {
 			g.end()
-		}*/
+		}
 	case "ended":
 	}
 }

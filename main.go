@@ -129,82 +129,22 @@ func natsInit() {
 			}
 		}
 
-		// Handle join message from AI
-		if sub, err := natsConn.Subscribe(g.Id+".join", func(msg *nats.Msg) {
-		}); err != nil {
-		} else {
-			subs = append(subs, sub)
-		}
-		/*
-			// Subscribe to gameId.join
-			if sub, err := natsConn.Subscribe(g.Id+".join", func(msg *nats.Msg) {
-				var joinMsg JoinMsg
-				if err := json.Unmarshal(msg.Data, &joinMsg); err != nil {
-					log.Println("ERROR:", err.Error())
-					natsConn.Publish(msg.Reply, NewReply(g.Id, err))
-					return
-				}
-				p, err := g.newPlayer(&Vector{0, 0}, joinMsg.Name)
-				if err != nil {
-					log.Println("ERROR:", err.Error())
-					natsConn.Publish(msg.Reply, NewReply(g.Id, err))
-					return
-				}
-
-				p.BotId = joinMsg.BotId
-
-				natsConn.Publish(msg.Reply, NewReply(g.Id, err))
-				if sub, err := natsConn.Subscribe(p.BotId+".action", func(msg *nats.Msg) {
-					var action ActionMsg
-					if err := json.Unmarshal(msg.Data, &action); err != nil {
-						log.Println("ERROR:", err.Error())
-						natsConn.Publish(msg.Reply, NewReply(g.Id, err))
-						return
-					}
-					p.Action.Type = action.Type
-					p.Action.Direction = action.Direction
-				}); err != nil {
-					log.Println("ERROR:", err.Error())
-					natsConn.Publish(msg.Reply, NewReply(g.Id, err))
-					return
-				} else {
-					subs = append(subs, sub)
-				}
-			}); err != nil {
-				natsConn.Publish(msg.Reply, NewReply(g.Id, err))
-				log.Println("ERROR:", err.Error())
-				return
-			} else {
-				subs = append(subs, sub)
-			}
-		*/
-
-		/*// Subscribe to gameId.start
+		// Subscribe to gameId.start
 		if sub, err := natsConn.Subscribe(g.Id+".start", func(msg *nats.Msg) {
 			err := g.start()
 			if err != nil {
-				natsConn.Publish(msg.Reply, NewReply(g.Id, err))
+				//natsConn.Publish(msg.Reply, NewReply(g.Id, err))
 				log.Println("ERROR:", err.Error())
 			}
-			if err := natsConn.Publish(msg.Reply, NewReply(g.Id, err)); err != nil {
-				natsConn.Publish(msg.Reply, NewReply(g.Id, err))
-				log.Println("ERROR:", err.Error())
-			}
+			/*
+				if err := natsConn.Publish(msg.Reply, NewReply(g.Id, err)); err != nil {
+					natsConn.Publish(msg.Reply, NewReply(g.Id, err))
+					log.Println("ERROR:", err.Error())
+				}
+			*/
 		}); err != nil {
 			natsConn.Publish(msg.Reply, NewReply(g.Id, err))
 			log.Println("ERROR:", err.Error())
-		} else {
-			subs = append(subs, sub)
-		}*/
-
-		// Subscribe to gameId.end
-		if sub, err := natsConn.Subscribe(g.Id+".start", func(msg *nats.Msg) {
-			/*
-				err := g.start()
-				natsConn.Publish(msg.Reply, NewReply(g.Id, err))
-			*/
-		}); err != nil {
-			log.Println(err.Error())
 		} else {
 			subs = append(subs, sub)
 		}
@@ -219,24 +159,13 @@ func natsInit() {
 			subs = append(subs, sub)
 		}
 
-		// Invite players
-		/*for _, p := range createGameMsg.Players {
-			joinReq := &JoinRequest{
-				Type:     "joinRequest",
-				GameId:   g.Id,
-				GameMode: createGameMsg.Mode,
-			}
-			b, _ := json.Marshal(joinReq)
-			natsConn.Publish(p.BotId+".joinRequest", b)
-		}*/
-
 		// Reply game creator with id.
 		natsConn.Publish(msg.Reply, NewReply(g.Id, nil))
 
 		go func() {
 			for {
 				<-time.After(time.Second)
-				//g.update(time.Millisecond * 100) // TODO some logic for this!
+				g.update(time.Millisecond * 100) // TODO some logic for this!
 				log.Println("game update: " + g.State)
 
 				b := g.getState()
