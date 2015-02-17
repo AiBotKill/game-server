@@ -227,7 +227,7 @@ func natsInit() {
 				g.update(time.Millisecond * 100) // TODO some logic for this!
 				log.Println("game update: " + g.State)
 
-				err := natsEncodedConn.Publish(g.Id+".gamestate", string(g.getState()))
+				err := natsConn.Publish(g.Id+".gameState", g.getState())
 				if err != nil {
 					log.Println(err.Error())
 				}

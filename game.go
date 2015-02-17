@@ -169,21 +169,23 @@ func (g *game) update(dt time.Duration) {
 	switch g.State {
 	case "new":
 	case "running":
-		g.Collisions = nil
-		for _, b := range g.Bullets {
-			b.update(g, dt)
-			// Remove all bullets that are dead.
-			var newBullets []*bullet
-			for _, k := range g.Bullets {
-				if !k.Dead {
-					newBullets = append(newBullets, k)
+		/*
+			g.Collisions = nil
+			for _, b := range g.Bullets {
+				b.update(g, dt)
+				// Remove all bullets that are dead.
+				var newBullets []*bullet
+				for _, k := range g.Bullets {
+					if !k.Dead {
+						newBullets = append(newBullets, k)
+					}
 				}
+				g.Bullets = newBullets
 			}
-			g.Bullets = newBullets
-		}
-		for _, p := range g.Players {
-			p.update(g, dt)
-		}
+			for _, p := range g.Players {
+				p.update(g, dt)
+			}
+		*/
 		g.LastUpdate = time.Now()
 		if g.hasEnded() {
 			g.end()
