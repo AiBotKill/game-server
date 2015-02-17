@@ -241,7 +241,8 @@ func natsInit() {
 				err := natsConn.Publish(g.Id+".gameState", b)
 
 				if err != nil {
-					log.Println(err.Error())
+					log.Println(string(b))
+					log.Println("gamestate pub error: " + err.Error())
 				}
 				log.Println("ok...")
 
