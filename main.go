@@ -199,8 +199,10 @@ func natsInit() {
 
 		// Subscribe to gameId.end
 		if sub, err := natsConn.Subscribe(g.Id+".start", func(msg *nats.Msg) {
-			err := g.start()
-			natsConn.Publish(msg.Reply, NewReply(g.Id, err))
+			/*
+				err := g.start()
+				natsConn.Publish(msg.Reply, NewReply(g.Id, err))
+			*/
 		}); err != nil {
 			log.Println(err.Error())
 		} else {
@@ -278,11 +280,6 @@ func NewReply(id string, err error) []byte {
 
 	b, _ := json.Marshal(&reply)
 	return b
-}
-
-type GameStateMsg struct {
-	Id        string    `json:"id"`
-	StartTime time.Time `json:"startTime"`
 }
 
 type JoinMsg struct {
