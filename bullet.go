@@ -72,8 +72,8 @@ func (b *bullet) update(g *game, dt time.Duration) {
 				p.Hitpoints -= b.Damage
 				for _, shooter := range g.Players {
 					if shooter.Id == b.FiredBy {
-						p.DamageMade += b.Damage
 						shooter.DamageMade += b.Damage
+						shooter.Killed = append(shooter.Killed, p.Id)
 					}
 				}
 			}
