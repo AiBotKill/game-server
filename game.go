@@ -8,7 +8,8 @@ import (
 )
 
 type gameStateMsg struct {
-	Type string `json:"type"`
+	Type     string  `json:"type"`
+	TimeLeft float64 `json:"timeLeft"`
 	game
 }
 
@@ -45,15 +46,7 @@ func (g *game) getState() []byte {
 	gs := &gameStateMsg{}
 	gs.game = *g
 	gs.Type = "gameState"
-	/*
-		gs.Id = g.Id
-		gs.StartTime = g.StartTime
-		gs.TimeLeftMs = g.StartTime.Add(g.TimeLimit).Sub(g.LastUpdate).Seconds()
-		gs.Players = g.Players
-		gs.Bullets = g.Bullets
-		gs.Tiles = g.Tiles
-		gs.State = g.State
-	*/
+	gs.TimeLeft = g.StartTime.Add(g.TimeLimit).Sub(g.LastUpdate).Seconds()
 	b, err := json.Marshal(gs)
 	if err != nil {
 		log.Println("error marshaling:" + err.Error())
