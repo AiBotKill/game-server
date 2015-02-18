@@ -169,13 +169,16 @@ func natsInit() {
 				log.Println("game update: " + g.State)
 
 				b := g.getState()
-				err := natsConn.Publish(g.Id+".gameState", b)
-
-				if err != nil {
+				if err := natsConn.Publish(g.Id+".gameState", b); err != nil {
 					log.Println(string(b))
 					log.Println("gamestate pub error: " + err.Error())
 				}
-				log.Println("ok...")
+
+				for _, p := range g.Players {
+					if err := natsConn.Publish(p.BotId+".gameState", b); err != nil {
+						log.Println("gamestate pub error: " + err.Error())
+					}
+				}
 
 				if g.State == "end" {
 					// Game has ended, clean up and publish gameEnd message.
