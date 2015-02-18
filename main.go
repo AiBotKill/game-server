@@ -81,7 +81,7 @@ func natsInit() {
 	}
 
 	// Subscribe to createGame
-	natsConn.Subscribe("createGame", func(msg *nats.Msg) {
+	natsConn.Subscribe("startGame", func(msg *nats.Msg) {
 		var subs []*nats.Subscription
 
 		var createGameMsg CreateGameMsg
@@ -134,18 +134,6 @@ func natsInit() {
 			}
 		}
 
-		// Subscribe to gameId.start
-		if sub, err := natsConn.Subscribe(g.Id+".start", func(msg *nats.Msg) {
-			err := g.start()
-			natsConn.Publish(msg.Reply, NewReply(g.Id, err))
-		}); err != nil {
-			natsConn.Publish(msg.Reply, NewReply(g.Id, err))
-			log.Println("ERROR:", err.Error())
-			return
-		} else {
-			subs = append(subs, sub)
-		}
-
 		// Subscribe to gameId.end
 		if sub, err := natsConn.Subscribe(g.Id+".end", func(msg *nats.Msg) {
 			err := g.end()
@@ -158,8 +146,16 @@ func natsInit() {
 			subs = append(subs, sub)
 		}
 
-		// Reply game creator with id.
-		natsConn.Publish(msg.Reply, NewReply(g.Id, nil))
+		// Start game and return message.
+		if err := g.start(); err != nil {
+			natsConn.Publish(msg.Reply, NewReply(g.Id, err))
+			return
+		} else {
+			natsConn.Publish(msg.Reply, NewReply(g.Id, err))
+		}
+
+		// Give some time to open visualization before starting for real.
+		<-time.After(time.Second * 5)
 
 		go func() {
 			for {
