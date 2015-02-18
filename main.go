@@ -132,19 +132,11 @@ func natsInit() {
 		// Subscribe to gameId.start
 		if sub, err := natsConn.Subscribe(g.Id+".start", func(msg *nats.Msg) {
 			err := g.start()
-			if err != nil {
-				//natsConn.Publish(msg.Reply, NewReply(g.Id, err))
-				log.Println("ERROR:", err.Error())
-			}
-			/*
-				if err := natsConn.Publish(msg.Reply, NewReply(g.Id, err)); err != nil {
-					natsConn.Publish(msg.Reply, NewReply(g.Id, err))
-					log.Println("ERROR:", err.Error())
-				}
-			*/
+			natsConn.Publish(msg.Reply, NewReply(g.Id, err))
 		}); err != nil {
 			natsConn.Publish(msg.Reply, NewReply(g.Id, err))
 			log.Println("ERROR:", err.Error())
+			return
 		} else {
 			subs = append(subs, sub)
 		}
@@ -154,7 +146,9 @@ func natsInit() {
 			err := g.end()
 			natsConn.Publish(msg.Reply, NewReply(g.Id, err))
 		}); err != nil {
+			natsConn.Publish(msg.Reply, NewReply(g.Id, err))
 			log.Println(err.Error())
+			return
 		} else {
 			subs = append(subs, sub)
 		}
@@ -164,7 +158,7 @@ func natsInit() {
 
 		go func() {
 			for {
-				<-time.After(time.Second)
+				<-time.After(time.Millisecond * 100)
 				g.update(time.Millisecond * 100) // TODO some logic for this!
 				log.Println("game update: " + g.State)
 
@@ -175,6 +169,7 @@ func natsInit() {
 				}
 
 				for _, p := range g.Players {
+					// TODO request? Wait for all messages to be delivered or timed out
 					if err := natsConn.Publish(p.BotId+".gameState", b); err != nil {
 						log.Println("gamestate pub error: " + err.Error())
 					}
