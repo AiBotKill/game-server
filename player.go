@@ -43,7 +43,7 @@ func (p *player) update(g *game, dt time.Duration) {
 		log.Println(p.Id + " looking")
 	case "shoot":
 		p.LookingAt = p.Action.Direction
-		if p.LastFired.Add(RATE_OF_FIRE).After(g.LastUpdate.Add(dt)) {
+		if p.LastFired.Add(RATE_OF_FIRE).Before(g.LastUpdate.Add(dt)) {
 			b := g.newBullet(p.Position, p.Action.Direction.Normalize().Mul(BULLET_SPEED), p.Id)
 			b.Damage = 10.0
 			p.LastFired = g.LastUpdate.Add(dt)
