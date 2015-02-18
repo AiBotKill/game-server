@@ -80,7 +80,7 @@ func (g *game) end() error {
 }
 
 func (g *game) hasEnded() bool {
-	if time.Since(g.StartTime) > g.TimeLimit {
+	if g.LastUpdate.After(g.StartTime.Add(g.TimeLimit)) {
 		log.Println("Outtatime")
 		return true
 	}
