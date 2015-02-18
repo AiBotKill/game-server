@@ -92,7 +92,7 @@ func (g *game) hasEnded() bool {
 	}
 	if alivePlayers < 2 {
 		log.Println("Outtaplayers, ending game.")
-		//return true
+		return true
 	}
 	return false
 }
@@ -123,6 +123,7 @@ func (g *game) newBullet(position *Vector, velocity *Vector, firedBy string) *bu
 	b.Velocity = velocity
 	b.FiredBy = firedBy
 	g.Bullets = append(g.Bullets, b)
+	log.Println("new bullet")
 	return b
 }
 
@@ -181,7 +182,7 @@ func (g *game) update(dt time.Duration) {
 			p.update(g, dt)
 		}
 
-		g.LastUpdate = time.Now()
+		g.LastUpdate = g.LastUpdate.Add(dt)
 		if g.hasEnded() {
 			g.end()
 		}

@@ -47,7 +47,7 @@ func (p *player) update(g *game, dt time.Duration) {
 			b := g.newBullet(p.Position, p.Action.Direction.Normalize().Mul(BULLET_SPEED), p.Id)
 			b.Damage = 10.0
 			p.LastFired = g.LastUpdate.Add(dt)
-			log.Println(p.Id + " shooting")
+			log.Println(p.Id + " shooting succesfully")
 		}
 		log.Println(p.Id + " shooting")
 	}
@@ -68,8 +68,13 @@ func (p *player) update(g *game, dt time.Duration) {
 			tCols = append(tCols, col)
 		}
 	}
-
-	p.Position.X += p.Velocity.X * dt.Seconds()
-	p.Position.Y += p.Velocity.Y * dt.Seconds()
+	tCols = SortCollisions(tCols, p.Position)
+	if len(tCols) > 1 {
+		// TODO : This is very sticky collision, might be difficult to handle for AI.
+		p.Position = tCols[0].Position
+	} else {
+		p.Position.X += p.Velocity.X * dt.Seconds()
+		p.Position.Y += p.Velocity.Y * dt.Seconds()
+	}
 
 }
