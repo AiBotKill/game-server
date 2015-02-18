@@ -34,10 +34,12 @@ func (p *player) update(g *game, dt time.Duration) {
 	// Parse the action
 	switch p.Action.Type {
 	case "move":
-		p.Velocity = p.Action.Direction
-		if p.Velocity.Length() > MAX_SPEED {
-			p.Velocity = p.Velocity.Normalize().Mul(MAX_SPEED)
+		acDir := &Vector{p.Action.Direction.X, p.Action.Direction.Y}
+		acDir.Sub(p.Position)
+		if acDir.Length() > MAX_SPEED {
+			acDir = acDir.Normalize().Mul(MAX_SPEED)
 		}
+		p.Velocity = acDir
 		log.Println(p.Id + " moving")
 	case "look":
 		p.LookingAt = p.Action.Direction
