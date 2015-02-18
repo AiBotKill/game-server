@@ -163,9 +163,20 @@ func (g *game) rmTile(t *tile) {
 	}
 }
 
+func (g *game) allLinkdead() bool {
+	for _, p := range g.Players {
+		if !p.Linkdead {
+			return false
+		}
+	}
+	return true
+}
 func (g *game) update(dt time.Duration) {
 	switch g.State {
 	case "new":
+		if g.allLinkdead() {
+			g.end()
+		}
 	case "running":
 		g.Collisions = nil
 		for _, b := range g.Bullets {
