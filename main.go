@@ -193,9 +193,11 @@ func natsInit() {
 						err = json.Unmarshal(b.Data, &reply)
 						if err != nil {
 							log.Println(err.Error())
+							p.Linkdead = true
 							return
 						} else if reply.Error != "" {
 							log.Println(reply.Error)
+							p.Linkdead = true
 						}
 					}()
 					wg.Wait()
