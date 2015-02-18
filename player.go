@@ -1,6 +1,9 @@
 package main
 
-import "time"
+import (
+	"log"
+	"time"
+)
 
 const (
 	RATE_OF_FIRE  = time.Millisecond * 500
@@ -34,15 +37,19 @@ func (p *player) update(g *game, dt time.Duration) {
 		if p.Velocity.Length() > MAX_SPEED {
 			p.Velocity = p.Velocity.Normalize().Mul(MAX_SPEED)
 		}
+		log.Println(p.Id + " moving")
 	case "look":
 		p.LookingAt = p.Action.Direction
+		log.Println(p.Id + " looking")
 	case "shoot":
 		p.LookingAt = p.Action.Direction
-		if p.LastFired.Add(RATE_OF_FIRE).After(time.Now()) {
+		if p.LastFired.Add(RATE_OF_FIRE).After(g.LastUpdate.Add(dt)) {
 			b := g.newBullet(p.Position, p.Action.Direction.Normalize().Mul(BULLET_SPEED), p.Id)
 			b.Damage = 10.0
-			p.LastFired = time.Now()
+			p.LastFired = g.LastUpdate.Add(dt)
+			log.Println(p.Id + " shooting")
 		}
+		log.Println(p.Id + " shooting")
 	}
 
 	d := p.Position.Add(p.Velocity.Mul(dt.Seconds()))
