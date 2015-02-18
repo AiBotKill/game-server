@@ -67,6 +67,7 @@ func (g *game) start() error {
 
 		g.State = "running"
 		g.StartTime = time.Now()
+		g.LastUpdate = g.StartTime
 		return nil
 	} else {
 		return errors.New("Can't start game, state is " + g.State)
