@@ -9,6 +9,10 @@ import (
 	"github.com/apcera/nats"
 )
 
+const (
+	AI_TIMEOUT = time.Second * 2
+)
+
 // servoiceId acts as the Id for this instance of game-server.
 // It is used to communicate directly to this gameserver, using
 // proper nats-address.
@@ -174,15 +178,25 @@ func natsInit() {
 					// Backpressure
 					wg.Add(1)
 					go func() {
+						defer wg.Done()
 						plrGamestate := g.getStateForPlayer(p)
-						reply, err := natsConn.Request(p.BotId+".gameState", plrGamestate, AI_TIMEOUT)
+						b, err := natsConn.Request(p.BotId+".gameState", plrGamestate, AI_TIMEOUT)
 						if err != nil {
 							log.Println("AI gamestate req error:", err.Error())
 							p.Linkdead = true
+							return
 						} else {
 							p.Linkdead = false
 						}
-						wg.Done()
+
+						var reply Reply
+						err = json.Unmarshal(b.Data, &reply)
+						if err != nil {
+							log.Println(err.Error())
+							return
+						} else if reply.Error != "" {
+							log.Println(reply.Error)
+						}
 					}()
 					wg.Wait()
 				}

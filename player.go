@@ -23,7 +23,7 @@ type player struct {
 	DamageMade float64   `json:"damageMade"`
 	Killed     []string  `json:"killed"`
 	LastFired  time.Time `json:"lastFired"`
-	LinkDead   bool      `json:"linkdead"`
+	Linkdead   bool      `json:"linkdead"`
 	Action     struct {
 		Type      string  `json:"type"`
 		Direction *Vector `json:"direction"`
