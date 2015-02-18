@@ -15,6 +15,7 @@ type gameStateMsg struct {
 	State      string    `json:"state"`
 	Players    []*player `json:"players"`
 	Bullets    []*bullet `json:"bullets"`
+	Tiles      []*tile   `json:"tiles"`
 }
 
 type collision struct {
@@ -54,6 +55,7 @@ func (g *game) getState() []byte {
 	gs.TimeLeftMs = g.StartTime.Add(g.TimeLimit).Sub(g.LastUpdate).Seconds()
 	gs.Players = g.Players
 	gs.Bullets = g.Bullets
+	gs.Tiles = g.Tiles
 	gs.State = g.State
 	b, err := json.Marshal(gs)
 	if err != nil {
