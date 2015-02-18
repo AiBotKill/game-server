@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"sync"
 	"time"
 
 	"github.com/apcera/nats"
@@ -168,11 +169,22 @@ func natsInit() {
 					log.Println("gamestate pub error: " + err.Error())
 				}
 
+				wg := &sync.WaitGroup{}
 				for _, p := range g.Players {
-					// TODO request? Wait for all messages to be delivered or timed out
-					if err := natsConn.Publish(p.BotId+".gameState", b); err != nil {
-						log.Println("gamestate pub error: " + err.Error())
-					}
+					// Backpressure
+					wg.Add(1)
+					go func() {
+						plrGamestate := g.getStateForPlayer(p)
+						reply, err := natsConn.Request(p.BotId+".gameState", plrGamestate, AI_TIMEOUT)
+						if err != nil {
+							log.Println("AI gamestate req error:", err.Error())
+							p.Linkdead = true
+						} else {
+							p.Linkdead = false
+						}
+						wg.Done()
+					}()
+					wg.Wait()
 				}
 
 				if g.State == "end" {
