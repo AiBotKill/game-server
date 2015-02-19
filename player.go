@@ -92,6 +92,9 @@ func (p *player) update(g *game, dt time.Duration) {
 		pVec := collisions[0].Position.Sub(p.Position)
 		p.Position = p.Position.Add(pVec.Normalize().Mul(dist - p.Radius))
 	} else {
+		if math.IsNaN(p.Velocity.Length()) {
+			p.Velocity = &Vector{0, 0}
+		}
 		p.Position.X += p.Velocity.X * dt.Seconds()
 		p.Position.Y += p.Velocity.Y * dt.Seconds()
 	}

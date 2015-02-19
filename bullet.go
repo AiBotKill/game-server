@@ -81,7 +81,9 @@ func (b *bullet) update(g *game, dt time.Duration) {
 			}
 		}
 	}
-
+	if math.IsNaN(b.Velocity.Length()) {
+		b.Dead = true
+	}
 	b.Position.X += b.Velocity.X * dt.Seconds()
 	b.Position.Y += b.Velocity.Y * dt.Seconds()
 }
