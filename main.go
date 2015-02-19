@@ -117,7 +117,8 @@ func natsInit() {
 			p.BotId = jp.BotId
 			p.Team = jp.Team
 			rnd := rand.Intn(len(createGameMsg.StartingPositions))
-			p.Position = createGameMsg.StartingPositions[rnd]
+			rndPos := createGameMsg.StartingPositions[rnd]
+			p.Position = &Vector{rndPos.X + 0.5, rndPos.Y + 0.5}
 			createGameMsg.StartingPositions = append(createGameMsg.StartingPositions[:rnd], createGameMsg.StartingPositions[rnd+1:]...)
 
 			// Subscribe to "botId.action" address.
