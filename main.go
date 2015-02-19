@@ -207,10 +207,6 @@ func natsInit() {
 					log.Println("Game " + g.Id + " has ended.")
 					natsConn.Publish(g.Id+".gameEnd", g.getEndState())
 
-					for _, p := range g.Players {
-						natsConn.Publish(p.BotId+".diconnect", []byte{})
-					}
-
 					// Unsubscribe all subscriptions made during this game.
 					for _, sub := range subs {
 						if err := sub.Unsubscribe(); err != nil {
