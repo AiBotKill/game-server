@@ -101,9 +101,7 @@ func natsInit() {
 
 		g.JsonTiles = make([]int, int(g.GameArea[0])*int(g.GameArea[1]))
 		for _, t := range createGameMsg.Tiles {
-			if t.Type == "1" {
-				g.JsonTiles[int(t.X)+int(t.Y)*int(g.GameArea[1])] = 1
-			}
+			g.JsonTiles[int(t.X)+int(t.Y)*int(g.GameArea[0])] = 1
 			pos := &Vector{t.X + 0.5, t.Y + 0.5}
 			g.newTile(pos, 1, 1)
 		}
