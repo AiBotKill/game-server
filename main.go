@@ -164,8 +164,8 @@ func natsInit() {
 
 		go func() {
 			for {
-				<-time.After(time.Second)
-				g.update(time.Second) // TODO some logic for this!
+				<-time.After(time.Millisecond * 250)
+				g.update(time.Millisecond * 250) // TODO some logic for this!
 				log.Println("game update: " + g.State)
 
 				b := g.getState()
