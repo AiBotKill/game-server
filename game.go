@@ -55,6 +55,18 @@ func (g *game) getState() []byte {
 	return b
 }
 
+func (g *game) getEndState() []byte {
+	gs := &gameStateMsg{}
+	gs.game = *g
+	gs.Type = "endGame"
+	gs.TimeLeft = g.StartTime.Add(g.TimeLimit).Sub(g.LastUpdate).Seconds()
+	b, err := json.Marshal(gs)
+	if err != nil {
+		log.Println("error marshaling:" + err.Error())
+	}
+	return b
+}
+
 func (g *game) getStateForPlayer(p *player) []byte {
 	// TODO: Hide occluded players from gamestate sent to AI. (not critical)
 	return g.getState()

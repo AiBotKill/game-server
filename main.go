@@ -209,7 +209,11 @@ func natsInit() {
 				if g.State == "end" {
 					// Game has ended, clean up and publish gameEnd message.
 					log.Println("Game " + g.Id + " has ended.")
-					natsConn.Publish(g.Id+".gameEnd", g.getState())
+					natsConn.Publish(g.Id+".gameEnd", g.getEndState())
+
+					for _, p := range g.Players {
+						natsConn.Publish(p.BotId+".diconnect", []byte{})
+					}
 
 					// Unsubscribe all subscriptions made during this game.
 					for _, sub := range subs {
