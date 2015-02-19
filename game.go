@@ -46,13 +46,13 @@ func newGame() *game {
 func (g *game) getStateWithoutTiles() []byte {
 	g2 := &game{}
 	*g2 = *g
-	g2.Tiles = make([]*tile, 0)
+	g2.JsonTiles = nil
 
 	gs := &gameStateMsg{}
 	gs.game = *g2
 	gs.Type = "gameState"
 	gs.TimeLeft = g.StartTime.Add(g.TimeLimit).Sub(g.LastUpdate).Seconds()
-	b, err := json.Marshal(&gs)
+	b, err := json.Marshal(gs)
 	if err != nil {
 		log.Println("error marshaling:" + err.Error())
 	}
