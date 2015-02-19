@@ -83,6 +83,7 @@ func natsInit() {
 
 	// Subscribe to createGame
 	natsConn.Subscribe("startGame", func(msg *nats.Msg) {
+		log.Println(string(msg.Data))
 		var subs []*nats.Subscription
 
 		var createGameMsg CreateGameMsg
