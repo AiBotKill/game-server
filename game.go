@@ -27,7 +27,8 @@ type game struct {
 	GameArea          [2]float64    `json:"gameArea"`
 	Mode              string        `json:"mode"`
 	Environment       string        `json:"environment"`
-	Tiles             []*tile       `json:"tiles"`
+	JsonTiles         []int         `json:"tiles"`
+	Tiles             []*tile       `json:"-"`
 	Players           []*player     `json:"players"`
 	Bullets           []*bullet     `json:"bullets"`
 	Collisions        []*collision  `json:"collisions"`
