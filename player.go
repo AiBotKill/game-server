@@ -78,7 +78,6 @@ func (p *player) update(g *game, dt time.Duration) {
 		for j := i + 1; j < len(collisions); j++ {
 			v1 := collisions[i].Position.Sub(p.Position)
 			v2 := collisions[j].Position.Sub(p.Position)
-			log.Println(v1, v2, v1.Length(), v2.Length())
 			if v1.Length() > v2.Length() {
 				collisions[i], collisions[j] = collisions[j], collisions[i]
 			}
