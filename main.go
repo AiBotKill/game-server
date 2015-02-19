@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"log"
+	"math/rand"
 	"sync"
 	"time"
 
@@ -113,6 +114,9 @@ func natsInit() {
 
 			p.BotId = jp.BotId
 			p.Team = jp.Team
+			rnd := rand.Intn(len(createGameMsg.StartingPositions))
+			p.Position = createGameMsg.StartingPositions[rnd]
+			createGameMsg.StartingPositions = append(createGameMsg.StartingPositions[:rnd], createGameMsg.StartingPositions[rnd+1:]...)
 
 			// Subscribe to "botId.action" address.
 			if sub, err := natsConn.Subscribe(p.BotId+".action", func(msg *nats.Msg) {
