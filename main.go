@@ -183,7 +183,7 @@ func natsInit() {
 
 				b := g.getStateWithoutTiles()
 				log.Println(string(b))
-				if err := natsConn.Publish(g.Id+".gameState", b); err != nil {
+				if err := natsConn.Publish("consoleGameState", b); err != nil {
 					log.Println(string(b))
 					log.Println("gamestate pub error: " + err.Error())
 				}
@@ -216,7 +216,7 @@ func natsInit() {
 				if g.State == "end" {
 					// Game has ended, clean up and publish gameEnd message.
 					log.Println("Game " + g.Id + " has ended.")
-					natsConn.Publish(g.Id+".gameEnd", g.getEndState())
+					natsConn.Publish("consoleGameEnd", g.getEndState())
 
 					// Unsubscribe all subscriptions made during this game.
 					for _, sub := range subs {
