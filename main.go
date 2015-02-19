@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"log"
 	"math/rand"
-	"sync"
 	"time"
 
 	"github.com/apcera/nats"
@@ -115,6 +114,7 @@ func natsInit() {
 			}
 
 			p.BotId = jp.BotId
+			p.Name = jp.Name
 			p.Team = jp.Team
 			rnd := rand.Intn(len(createGameMsg.StartingPositions))
 			rndPos := createGameMsg.StartingPositions[rnd]
@@ -177,35 +177,30 @@ func natsInit() {
 					log.Println("gamestate pub error: " + err.Error())
 				}
 
-				wg := &sync.WaitGroup{}
 				for _, p := range g.Players {
 					// Backpressure
-					wg.Add(1)
-					go func() {
-						defer wg.Done()
-						plrGamestate := g.getStateForPlayer(p)
-						b, err := natsConn.Request(p.BotId+".gameState", plrGamestate, AI_TIMEOUT)
-						if err != nil {
-							log.Println("AI gamestate req error:", err.Error())
-							p.Linkdead = true
-							return
-						} else {
-							p.Linkdead = false
-						}
 
-						var reply Reply
-						err = json.Unmarshal(b.Data, &reply)
-						if err != nil {
-							log.Println(err.Error())
-							p.Linkdead = true
-							return
-						} else if reply.Error != "" {
-							log.Println(reply.Error)
-							p.Linkdead = true
-						}
-					}()
+					plrGamestate := g.getStateForPlayer(p)
+					b, err := natsConn.Request(p.BotId+".gameState", plrGamestate, AI_TIMEOUT)
+					if err != nil {
+						log.Println("AI gamestate req error:", err.Error())
+						p.Linkdead = true
+						return
+					} else {
+						p.Linkdead = false
+					}
+
+					var reply Reply
+					err = json.Unmarshal(b.Data, &reply)
+					if err != nil {
+						log.Println(err.Error())
+						p.Linkdead = true
+						return
+					} else if reply.Error != "" {
+						log.Println(reply.Error)
+						p.Linkdead = true
+					}
 				}
-				wg.Wait()
 
 				if g.State == "end" {
 					// Game has ended, clean up and publish gameEnd message.
@@ -280,4 +275,5 @@ type CreateGameMsg struct {
 type CreateGameMsgPlayer struct {
 	Team  int64  `json:"team"`
 	BotId string `json:"botId"`
+	Name  string `json:"name"`
 }
