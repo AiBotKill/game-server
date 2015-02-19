@@ -59,23 +59,36 @@ func (p *player) update(g *game, dt time.Duration) {
 	d := p.Position.Add(p.Velocity.Mul(dt.Seconds()))
 	line := Line{A: p.Position, B: d}
 
+	var collisions []*collision
+
 	// Test every tile for collision
-	var tCols []*collision
 	for _, ct := range g.Tiles {
-		tCol := ct.Intersect(line)
-		for _, c := range tCol {
-			col := &collision{
-				Collider: p.Id,
-				Target:   ct.Id,
-				Position: c,
-			}
-			tCols = append(tCols, col)
+		pCol := ct.Intersect(line)
+		for _, c := range pCol {
+			col := &collision{}
+			col.Collider = p.Id
+			col.Target = ct.Id
+			col.Position = c
+			collisions = append(collisions, col)
 		}
 	}
-	tCols = SortCollisions(tCols, p.Position)
-	if len(tCols) > 1 {
-		// TODO : This is very sticky collision, might be difficult to handle for AI.
-		p.Position = tCols[0].Position
+
+	// Sort collisions
+	for i := 0; i < len(collisions)-1; i++ {
+		for j := i + 1; j < len(collisions); j++ {
+			v1 := collisions[i].Position.Sub(p.Position)
+			v2 := collisions[j].Position.Sub(p.Position)
+			log.Println(v1, v2, v1.Length(), v2.Length())
+			if v1.Length() > v2.Length() {
+				collisions[i], collisions[j] = collisions[j], collisions[i]
+			}
+		}
+	}
+
+	if len(collisions) > 0 {
+		dist := collisions[0].Position.Sub(p.Position).Length()
+		pVec := collisions[0].Position.Sub(p.Position)
+		p.Position = p.Position.Add(pVec.Normalize().Mul(dist - p.Radius))
 	} else {
 		p.Position.X += p.Velocity.X * dt.Seconds()
 		p.Position.Y += p.Velocity.Y * dt.Seconds()
