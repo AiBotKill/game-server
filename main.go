@@ -2,6 +2,7 @@ package main
 
 import (
 	"encoding/json"
+	"errors"
 	"log"
 	"math/rand"
 	"time"
@@ -98,6 +99,14 @@ func natsInit() {
 		g.StartingPositions = createGameMsg.StartingPositions
 		g.Mode = createGameMsg.Mode
 
+		// Check if there are enough player starting locations.
+		if len(createGameMsg.Players) > len(createGameMsg.StartingPositions) {
+			log.Println("Error, not enough starting locations.")
+			natsConn.Publish(msg.Reply, NewReply(g.Id, errors.New("not enough starting locations")))
+			return
+		}
+
+		// Generate more compact tiles.
 		g.JsonTiles = make([]int, int(g.GameArea[0])*int(g.GameArea[1]))
 		for _, t := range createGameMsg.Tiles {
 			g.JsonTiles[int(t.X)+int(t.Y)*int(g.GameArea[0])] = 1
@@ -105,6 +114,7 @@ func natsInit() {
 			g.newTile(pos, 1, 1)
 		}
 
+		// Create players.
 		for _, jp := range createGameMsg.Players {
 			p, err := g.newPlayer(&Vector{0, 0}, "")
 			if err != nil {
