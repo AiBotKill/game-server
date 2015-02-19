@@ -68,7 +68,7 @@ type CreatePlayerMsg struct {
 // update, the last action is used.
 // Replied with IdReplyMsg, with playerId as Id.
 type ActionMsg struct {
-	Type      string  `json:"type"`
+	Action    string  `json:"action"`
 	Direction *Vector `json:"direction"`
 }
 
@@ -126,7 +126,7 @@ func natsInit() {
 					natsConn.Publish(msg.Reply, NewReply(g.Id, err))
 					return
 				}
-				p.Action.Type = action.Type
+				p.Action.Type = action.Action
 				p.Action.Direction = action.Direction
 				natsConn.Publish(msg.Reply, NewReply(g.Id, nil))
 				log.Println("Action reply ok.")
