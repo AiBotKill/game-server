@@ -204,8 +204,8 @@ func natsInit() {
 							p.Linkdead = true
 						}
 					}()
-					wg.Wait()
 				}
+				wg.Wait()
 
 				if g.State == "end" {
 					// Game has ended, clean up and publish gameEnd message.
