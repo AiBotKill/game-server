@@ -27,7 +27,7 @@ type game struct {
 	GameArea          [2]float64    `json:"gameArea"`
 	Mode              string        `json:"mode"`
 	Environment       string        `json:"environment"`
-	JsonTiles         []int         `json:"tiles"`
+	JsonTiles         []int         `json:"tiles,omitempty"`
 	Tiles             []*tile       `json:"-"`
 	Players           []*player     `json:"players"`
 	Bullets           []*bullet     `json:"bullets"`
@@ -41,6 +41,22 @@ func newGame() *game {
 	g.Id = Uuid()
 	g.State = "new"
 	return g
+}
+
+func (g *game) getStateWithoutTiles() []byte {
+	g2 := &game{}
+	*g2 = *g
+	g2.Tiles = nil
+
+	gs := &gameStateMsg{}
+	gs.game = *g2
+	gs.Type = "gameState"
+	gs.TimeLeft = g.StartTime.Add(g.TimeLimit).Sub(g.LastUpdate).Seconds()
+	b, err := json.Marshal(gs)
+	if err != nil {
+		log.Println("error marshaling:" + err.Error())
+	}
+	return b
 }
 
 func (g *game) getState() []byte {
@@ -68,16 +84,13 @@ func (g *game) getEndState() []byte {
 }
 
 func (g *game) getStateForPlayer(p *player) []byte {
-	// TODO: Hide occluded players from gamestate sent to AI. (not critical)
+	// TODO  Hide occluded players from gamestate sent to AI. (not critical)
 	return g.getState()
 }
 
 func (g *game) start() error {
 	if g.State == "new" {
 		log.Println("game starting")
-
-		// TODO: Randomize player positions!
-
 		g.State = "running"
 		g.StartTime = time.Now()
 		g.LastUpdate = g.StartTime
