@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"math"
 	"time"
 )
 
@@ -69,7 +70,9 @@ func (p *player) update(g *game, dt time.Duration) {
 			col.Collider = p.Id
 			col.Target = ct.Id
 			col.Position = c
-			collisions = append(collisions, col)
+			if !math.IsNaN(col.Position.X) && !math.IsNaN(col.Position.Y) {
+				collisions = append(collisions, col)
+			}
 		}
 	}
 
