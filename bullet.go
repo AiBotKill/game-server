@@ -1,7 +1,7 @@
 package main
 
 import (
-	"log"
+	"math"
 	"time"
 )
 
@@ -27,7 +27,9 @@ func (b *bullet) update(g *game, dt time.Duration) {
 			col.Collider = b.Id
 			col.Target = ct.Id
 			col.Position = c
-			collisions = append(collisions, col)
+			if !math.IsNaN(col.Position.X) && !math.IsNaN(col.Position.Y) {
+				collisions = append(collisions, col)
+			}
 		}
 	}
 
@@ -40,7 +42,9 @@ func (b *bullet) update(g *game, dt time.Duration) {
 				col.Collider = b.Id
 				col.Target = cp.Id
 				col.Position = c
-				collisions = append(collisions, col)
+				if !math.IsNaN(col.Position.X) && !math.IsNaN(col.Position.Y) {
+					collisions = append(collisions, col)
+				}
 			}
 		}
 	}
@@ -50,7 +54,6 @@ func (b *bullet) update(g *game, dt time.Duration) {
 		for j := i + 1; j < len(collisions); j++ {
 			v1 := collisions[i].Position.Sub(b.Position)
 			v2 := collisions[j].Position.Sub(b.Position)
-			log.Println(v1, v2, v1.Length(), v2.Length())
 			if v1.Length() > v2.Length() {
 				collisions[i], collisions[j] = collisions[j], collisions[i]
 			}
@@ -60,7 +63,6 @@ func (b *bullet) update(g *game, dt time.Duration) {
 	// If there are collisions, add the closest one to game.collisions
 	// and mark bullet as dead.
 	if len(collisions) > 0 {
-		log.Println(collisions)
 		g.Collisions = append(g.Collisions, collisions[0])
 		b.Dead = true
 		// Cause damage for players, and add damagemade for the shooter.
