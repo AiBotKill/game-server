@@ -129,6 +129,7 @@ func natsInit() {
 				p.Action.Type = action.Type
 				p.Action.Direction = action.Direction
 				natsConn.Publish(msg.Reply, NewReply(g.Id, nil))
+				log.Println("Action reply ok.")
 			}); err != nil {
 				natsConn.Publish(msg.Reply, NewReply(g.Id, err))
 				log.Println("ERROR:", err.Error())
