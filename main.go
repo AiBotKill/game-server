@@ -182,6 +182,7 @@ func natsInit() {
 				log.Println("game update: " + g.State)
 
 				b := g.getStateWithoutTiles()
+				log.Println(string(b))
 				if err := natsConn.Publish(g.Id+".gameState", b); err != nil {
 					log.Println(string(b))
 					log.Println("gamestate pub error: " + err.Error())
