@@ -138,6 +138,8 @@ func (g *game) newPlayer(position *Vector, name string) (*player, error) {
 	g.Players = append(g.Players, p)
 	p.LookingAt = &Vector{p.Position.X, p.Position.Y}
 	log.Println("newplayer", p.Position, p.Velocity)
+	p.Kills = make([]string, 0)
+	p.Hits = make([]string, 0)
 	return p, nil
 }
 
