@@ -22,7 +22,8 @@ type player struct {
 	LookingAt  *Vector   `json:"lookingAt"`
 	Hitpoints  float64   `json:"hitpoints"`
 	DamageMade float64   `json:"damageMade"`
-	Killed     []string  `json:"killed"`
+	Hits       []string  `json:"hits"`
+	Kills      []string  `json:"kills"`
 	LastFired  time.Time `json:"lastFired"`
 	Linkdead   bool      `json:"linkdead"`
 	Action     struct {

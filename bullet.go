@@ -71,14 +71,19 @@ func (b *bullet) update(g *game, dt time.Duration) {
 		// Cause damage for players, and add damagemade for the shooter.
 		for _, p := range g.Players {
 			if p.Id == collisions[0].Target && p.Hitpoints > 0 {
-				if p.Hitpoints < b.Damage {
+				killShot := false
+				if p.Hitpoints < b.Damage && p.Hitpoints != 0 {
 					b.Damage = p.Hitpoints
+					killShot = true
 				}
 				p.Hitpoints -= b.Damage
 				for _, shooter := range g.Players {
 					if shooter.Id == b.FiredBy {
 						shooter.DamageMade += b.Damage
-						shooter.Killed = append(shooter.Killed, p.Id)
+						shooter.Hits = append(shooter.Hits, p.Id)
+						if killShot {
+							shooter.Kills = append(shooter.Kills, p.Id)
+						}
 					}
 				}
 			}
