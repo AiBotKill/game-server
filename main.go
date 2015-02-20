@@ -185,7 +185,6 @@ func natsInit() {
 				b := g.getStateWithoutTiles()
 				log.Println(string(b))
 				if err := natsConn.Publish("consoleGameState", b); err != nil {
-					log.Println(string(b))
 					log.Println("gamestate pub error: " + err.Error())
 				}
 
@@ -195,7 +194,7 @@ func natsInit() {
 					if err != nil {
 						log.Println("AI gamestate req error:", err.Error())
 						p.Linkdead = true
-						return
+						continue
 					} else {
 						p.Linkdead = false
 					}
@@ -205,7 +204,7 @@ func natsInit() {
 					if err != nil {
 						log.Println(err.Error())
 						p.Linkdead = true
-						return
+						continue
 					} else if reply.Error != "" {
 						log.Println(reply.Error)
 						p.Linkdead = true
