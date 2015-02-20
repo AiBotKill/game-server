@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	AI_TIMEOUT = time.Second * 2
+	AI_TIMEOUT = time.Second * 5
 )
 
 // servoiceId acts as the Id for this instance of game-server.
@@ -190,8 +190,6 @@ func natsInit() {
 				}
 
 				for _, p := range g.Players {
-					// Backpressure
-
 					plrGamestate := g.getStateForPlayer(p)
 					b, err := natsConn.Request(p.BotId+".gameState", plrGamestate, AI_TIMEOUT)
 					if err != nil {
