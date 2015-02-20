@@ -32,6 +32,9 @@ type player struct {
 }
 
 func (p *player) update(g *game, dt time.Duration) {
+	if p.Hitpoints == 0 {
+		return
+	}
 	// Parse the action
 	switch p.Action.Type {
 	case "move":

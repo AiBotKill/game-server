@@ -35,6 +35,9 @@ func (b *bullet) update(g *game, dt time.Duration) {
 
 	// Test every player for collision
 	for _, cp := range g.Players {
+		if cp.Hitpoints == 0 {
+			continue
+		}
 		if cp.Id != b.FiredBy {
 			pCol := cp.Intersect(line)
 			for _, c := range pCol {
